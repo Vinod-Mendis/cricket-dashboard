@@ -57,7 +57,7 @@ function CreatePlayerDialog({
     setLoading(true)
 
     try {
-      const response = await fetch("https://cricket-score-board-v4g9.onrender.com/api/player", {
+      const response = await fetch("https://cricket-score-board-v4g9.onrender.com/api/players", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -272,11 +272,12 @@ function AddExistingPlayersDialog({
     try {
       const response = await fetch(`https://cricket-score-board-v4g9.onrender.com/api/players?exclude_team=${teamId}`)
       if (response.ok) {
-        const players = await response.json()
-        setAvailablePlayers(players)
+        const data = await response.json()
+        setAvailablePlayers(data.data || [])
       }
     } catch (error) {
       console.error("Error fetching available players:", error)
+      setAvailablePlayers([])
     }
   }
 
@@ -421,11 +422,14 @@ export default function TeamDetailPage() {
     try {
       const response = await fetch(`https://cricket-score-board-v4g9.onrender.com/api/players?team_id=${teamId}`)
       if (response.ok) {
-        const players = await response.json()
-        setTeamPlayers(players)
+        const data = await response.json()
+        setTeamPlayers(data.data || [])
+      } else {
+        setTeamPlayers([])
       }
     } catch (error) {
       console.error("Error fetching team players:", error)
+      setTeamPlayers([])
     } finally {
       setLoading(false)
     }
@@ -444,11 +448,13 @@ export default function TeamDetailPage() {
     }
   }
 
-  const filteredPlayers = teamPlayers.filter(
-    (player) =>
-      player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      player.role.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const filteredPlayers = Array.isArray(teamPlayers)
+    ? teamPlayers.filter(
+        (player) =>
+          player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          player.role.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : []
 
   if (!team) {
     return (
