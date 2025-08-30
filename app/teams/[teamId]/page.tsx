@@ -411,6 +411,9 @@ export default function TeamDetailPage() {
   const teamId = params.teamId as string
   const team = teams.find((t) => t.id === teamId)
 
+  console.log(teamPlayers);
+  
+
   useEffect(() => {
     if (teamId) {
       fetchTeamPlayers()
@@ -420,7 +423,7 @@ export default function TeamDetailPage() {
   const fetchTeamPlayers = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`https://cricket-score-board-v4g9.onrender.com/api/players?team_id=${teamId}`)
+      const response = await fetch(`https://cricket-score-board-v4g9.onrender.com/api/players/team/${teamId }`)
       if (response.ok) {
         const data = await response.json()
         setTeamPlayers(data.data || [])
@@ -536,6 +539,7 @@ export default function TeamDetailPage() {
                         <TableHead>ID</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Role</TableHead>
+                        <TableHead>Team ID</TableHead>
                         <TableHead>Age</TableHead>
                         <TableHead>Shirt #</TableHead>
                         <TableHead>Actions</TableHead>
@@ -549,6 +553,7 @@ export default function TeamDetailPage() {
                           <TableCell>
                             <Badge variant="secondary">{player.role}</Badge>
                           </TableCell>
+                          <TableCell>{player.team_id}</TableCell>
                           <TableCell>{player.age}</TableCell>
                           <TableCell>{player.shirt_number || "-"}</TableCell>
                           <TableCell>
