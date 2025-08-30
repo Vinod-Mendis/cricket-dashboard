@@ -52,6 +52,19 @@ interface Player {
   updated_at: string;
 }
 
+interface Team {
+  id: string;
+  team_name: string;
+  short_name: string;
+  primary_color: string;
+  secondary_color?: string;
+  extra_color?: string;
+  flag?: string;
+  logo?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 function getRoleBadgeColor(role: string) {
   switch (role.toLowerCase()) {
     case "batsman":
@@ -68,7 +81,7 @@ function getRoleBadgeColor(role: string) {
 }
 
 export default function PlayersPage() {
-  const { teams } = useCricket();
+  const [teams, setTeams] = useState<Team[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -89,6 +102,26 @@ export default function PlayersPage() {
     last_match_date: "",
     career_span: "",
   });
+
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch(
+        "https://cricket-score-board-v4g9.onrender.com/api/teams"
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setTeams(data.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchPlayers = async () => {
     try {
@@ -156,7 +189,7 @@ export default function PlayersPage() {
       };
 
       const response = await fetch(
-        "https://cricket-score-board-v4g9.onrender.com/api/player",
+        "https://cricket-score-board-v4g9.onrender.com/api/players",
         {
           method: "POST",
           headers: {
@@ -191,7 +224,51 @@ export default function PlayersPage() {
     }
   };
 
+  const updatePlayer = async () => {
+    if (!editingPlayer) return;
+
+    try {
+      setIsUpdating(true);
+      const playerData = {
+        name: editingPlayer.name,
+        short_name: editingPlayer.short_name,
+        role: editingPlayer.role,
+        batting_style: editingPlayer.batting_style,
+        bowling_style: editingPlayer.bowling_style,
+        age: editingPlayer.age,
+        image: editingPlayer.image,
+        shirt_number: editingPlayer.shirt_number,
+        team_id: editingPlayer.team_id,
+        last_match_date: editingPlayer.last_match_date,
+        career_span: editingPlayer.career_span,
+      };
+
+      const response = await fetch(
+        `https://cricket-score-board-v4g9.onrender.com/api/players/${editingPlayer.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(playerData),
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        setIsEditDialogOpen(false);
+        setEditingPlayer(null);
+        fetchPlayers();
+      }
+    } catch (error) {
+      console.error("Failed to update player:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   useEffect(() => {
+    fetchTeams();
     fetchPlayers();
   }, []);
 
@@ -200,6 +277,13 @@ export default function PlayersPage() {
     setSelectedRole("all");
     setSelectedTeam("all");
     fetchPlayers();
+  };
+
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    return date.toISOString().split("T")[0]; // Returns YYYY-MM-DD format
   };
 
   return (
@@ -288,8 +372,8 @@ export default function PlayersPage() {
                       <SelectContent>
                         <SelectItem value="none">No team</SelectItem>
                         {teams.map((team) => (
-                          <SelectItem key={team.id} value={team.id}>
-                            {team.name}
+                          <SelectItem key={team.id} value={team.id.toString()}>
+                            {team.team_name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -477,8 +561,8 @@ export default function PlayersPage() {
               <SelectContent>
                 <SelectItem value="all">All Teams</SelectItem>
                 {teams.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>
-                    {team.name}
+                  <SelectItem key={team.id} value={team.id.toString()}>
+                    {team.team_name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -521,6 +605,8 @@ export default function PlayersPage() {
                     <TableHead>ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Shirt Number</TableHead>
+                    <TableHead>Team ID</TableHead>
                     <TableHead>Team Name</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -542,6 +628,12 @@ export default function PlayersPage() {
                           {player.role}
                         </Badge>
                       </TableCell>
+                      <TableCell className="font-medium">
+                        {player.shirt_number}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {player.team_id}
+                      </TableCell>
                       <TableCell>
                         {player.team_name ? (
                           <Badge
@@ -560,7 +652,11 @@ export default function PlayersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0">
+                            className="h-8 w-8 p-0"
+                            onClick={() => {
+                              setEditingPlayer(player);
+                              setIsEditDialogOpen(true);
+                            }}>
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
@@ -594,6 +690,278 @@ export default function PlayersPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Player</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Full Name *</Label>
+                <Input
+                  id="edit-name"
+                  value={editingPlayer?.name || ""}
+                  onChange={(e) =>
+                    setEditingPlayer(
+                      editingPlayer
+                        ? { ...editingPlayer, name: e.target.value }
+                        : null
+                    )
+                  }
+                  placeholder="e.g., Rohit Sharma"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-short_name">Short Name</Label>
+                <Input
+                  id="edit-short_name"
+                  value={editingPlayer?.short_name || ""}
+                  onChange={(e) =>
+                    setEditingPlayer(
+                      editingPlayer
+                        ? {
+                            ...editingPlayer,
+                            short_name: e.target.value,
+                          }
+                        : null
+                    )
+                  }
+                  placeholder="e.g., R. Sharma"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-role">Role *</Label>
+                <Select
+                  value={editingPlayer?.role || ""}
+                  onValueChange={(value) =>
+                    setEditingPlayer(
+                      editingPlayer ? { ...editingPlayer, role: value } : null
+                    )
+                  }>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Batsman">Batsman</SelectItem>
+                    <SelectItem value="Bowler">Bowler</SelectItem>
+                    <SelectItem value="All-rounder">All-rounder</SelectItem>
+                    <SelectItem value="Wicket-keeper">Wicket-keeper</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-team">Team</Label>
+                <Select
+                  value={editingPlayer?.team_id || ""}
+                  onValueChange={(value) =>
+                    setEditingPlayer(
+                      editingPlayer
+                        ? { ...editingPlayer, team_id: value }
+                        : null
+                    )
+                  }>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select team">
+                      {editingPlayer?.team_id &&
+                      editingPlayer.team_id !== "none"
+                        ? teams.find(
+                            (team) => team.id === editingPlayer.team_id
+                          )?.team_name || "Unknown team"
+                        : "No team"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No team</SelectItem>
+                    {teams.map((team) => (
+                      <SelectItem key={team.id} value={team.id.toString()}>
+                        {team.team_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-batting_style">Batting Style</Label>
+                <Select
+                  value={editingPlayer?.batting_style || ""}
+                  onValueChange={(value) =>
+                    setEditingPlayer(
+                      editingPlayer
+                        ? { ...editingPlayer, batting_style: value }
+                        : null
+                    )
+                  }>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select batting style" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Right-handed">Right-handed</SelectItem>
+                    <SelectItem value="Left-handed">Left-handed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-bowling_style">Bowling Style</Label>
+                <Select
+                  value={editingPlayer?.bowling_style || ""}
+                  onValueChange={(value) =>
+                    setEditingPlayer(
+                      editingPlayer
+                        ? { ...editingPlayer, bowling_style: value }
+                        : null
+                    )
+                  }>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select bowling style" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Right-arm Fast">
+                      Right-arm Fast
+                    </SelectItem>
+                    <SelectItem value="Left-arm Fast">Left-arm Fast</SelectItem>
+                    <SelectItem value="Right-arm Off-break">
+                      Right-arm Off-break
+                    </SelectItem>
+                    <SelectItem value="Left-arm Orthodox">
+                      Left-arm Orthodox
+                    </SelectItem>
+                    <SelectItem value="Right-arm Leg-break">
+                      Right-arm Leg-break
+                    </SelectItem>
+                    <SelectItem value="Left-arm Chinaman">
+                      Left-arm Chinaman
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-age">Age</Label>
+                <Input
+                  id="edit-age"
+                  type="number"
+                  value={editingPlayer?.age || ""}
+                  onChange={(e) =>
+                    setEditingPlayer(
+                      editingPlayer
+                        ? {
+                            ...editingPlayer,
+                            age: Number.parseInt(e.target.value) || 0,
+                          }
+                        : null
+                    )
+                  }
+                  placeholder="e.g., 35"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-shirt_number">Shirt Number</Label>
+                <Input
+                  id="edit-shirt_number"
+                  type="number"
+                  value={editingPlayer?.shirt_number || ""}
+                  onChange={(e) =>
+                    setEditingPlayer(
+                      editingPlayer
+                        ? {
+                            ...editingPlayer,
+                            shirt_number: Number.parseInt(e.target.value) || 0,
+                          }
+                        : null
+                    )
+                  }
+                  placeholder="e.g., 45"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-image">Image URL</Label>
+              <Input
+                id="edit-image"
+                value={editingPlayer?.image || ""}
+                onChange={(e) =>
+                  setEditingPlayer(
+                    editingPlayer
+                      ? { ...editingPlayer, image: e.target.value }
+                      : null
+                  )
+                }
+                placeholder="http://example.com/player.jpg"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-last_match_date">Last Match Date</Label>
+                <Input
+                  id="edit-last_match_date"
+                  type="date"
+                  value={formatDateForInput(
+                    editingPlayer?.last_match_date || ""
+                  )}
+                  onChange={(e) =>
+                    setEditingPlayer(
+                      editingPlayer
+                        ? {
+                            ...editingPlayer,
+                            last_match_date: e.target.value,
+                          }
+                        : null
+                    )
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-career_span">Career Span</Label>
+                <Input
+                  id="edit-career_span"
+                  value={editingPlayer?.career_span || ""}
+                  onChange={(e) =>
+                    setEditingPlayer(
+                      editingPlayer
+                        ? {
+                            ...editingPlayer,
+                            career_span: e.target.value,
+                          }
+                        : null
+                    )
+                  }
+                  placeholder="e.g., 2007-Present"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setEditingPlayer(null);
+                }}>
+                Cancel
+              </Button>
+              <Button
+                onClick={updatePlayer}
+                disabled={
+                  isUpdating || !editingPlayer?.name || !editingPlayer?.role
+                }>
+                {isUpdating ? "Updating..." : "Update Player"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
