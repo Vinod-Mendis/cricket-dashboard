@@ -372,11 +372,13 @@ function AddExistingPlayersDialog({
     }
   };
 
-  const filteredPlayers = availablePlayers.filter(
-    (player) =>
-      player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      player.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPlayers = availablePlayers
+    .filter((player) => player.team_id !== teamId) // exclude current team players
+    .filter(
+      (player) =>
+        player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        player.role.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   const handlePlayerToggle = (playerId: string | number) => {
     const idNum = typeof playerId === "number" ? playerId : Number(playerId);
@@ -389,21 +391,25 @@ function AddExistingPlayersDialog({
 
   const handleAddPlayers = async () => {
     if (selectedPlayers.length === 0) return;
-
     setLoading(true);
+
     try {
-      const promises = selectedPlayers.map((playerId) =>
-        fetch(
-          `https://cricket-score-board-v4g9.onrender.com/api/player/${playerId}`,
+      const promises = selectedPlayers.map((playerId) => {
+        const player = availablePlayers.find((p) => p.id === playerId);
+        if (!player) return Promise.resolve();
+
+        return fetch(
+          `https://cricket-score-board-v4g9.onrender.com/api/players/${playerId}`,
           {
             method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ team_id: teamId }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...player, // include all current player data
+              team_id: teamId, // update team_id
+            }),
           }
-        )
-      );
+        );
+      });
 
       await Promise.all(promises);
       setOpen(false);
@@ -424,13 +430,15 @@ function AddExistingPlayersDialog({
           Add Existing Players
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+
+      <DialogContent className="w-[90vw] max-w-[1200px] max-h-[80vh] overflow-hidden rounded-lg">
         <DialogHeader>
           <DialogTitle>Add Existing Players to {teamName}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col h-[calc(80vh-120px)]">
+          {/* Search bar */}
+          <div className="flex items-center gap-2 p-4">
             <Search className="h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search players by name or role..."
@@ -440,49 +448,55 @@ function AddExistingPlayersDialog({
             />
           </div>
 
-          {filteredPlayers.length > 0 ? (
-            <div className="border rounded-lg">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">Select</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Current Team</TableHead>
-                    <TableHead>Age</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPlayers.map((player) => (
-                    <TableRow key={player.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedPlayers.includes(player.id)}
-                          onCheckedChange={() => handlePlayerToggle(player.id)}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {player.name}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{player.role}</Badge>
-                      </TableCell>
-                      <TableCell>{player.team_id || "Unassigned"}</TableCell>
-                      <TableCell>{player.age}</TableCell>
+          {/* Player table */}
+          <div className="flex-1 overflow-y-auto px-4">
+            {filteredPlayers.length > 0 ? (
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">Select</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Current Team</TableHead>
+                      <TableHead>Age</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              {searchTerm
-                ? "No players found matching your search."
-                : "No available players to add."}
-            </div>
-          )}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPlayers.map((player) => (
+                      <TableRow key={player.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedPlayers.includes(player.id)}
+                            onCheckedChange={() =>
+                              handlePlayerToggle(player.id)
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {player.name}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{player.role}</Badge>
+                        </TableCell>
+                        <TableCell>{player.team_id || "Unassigned"}</TableCell>
+                        <TableCell>{player.age}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchTerm
+                  ? "No players found matching your search."
+                  : "No available players to add."}
+              </div>
+            )}
+          </div>
 
-          <div className="flex justify-between items-center pt-4">
+          {/* Footer */}
+          <div className="sticky bottom-0 bg-white border-t p-4 flex justify-between items-center">
             <p className="text-sm text-muted-foreground">
               {selectedPlayers.length} player
               {selectedPlayers.length !== 1 ? "s" : ""} selected
