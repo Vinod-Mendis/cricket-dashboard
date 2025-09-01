@@ -423,7 +423,7 @@ export default function TeamDetailPage() {
   const fetchTeamPlayers = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`https://cricket-score-board-v4g9.onrender.com/api/players/team/${teamId }`)
+      const response = await fetch(`https://cricket-score-board-v4g9.onrender.com/api/players/team/${teamId}`)
       if (response.ok) {
         const data = await response.json()
         setTeamPlayers(data.data || [])

@@ -114,6 +114,7 @@ export default function OfficialsPage() {
         setOfficials(result.data);
       }
     } catch (error) {
+       console.error(error);
       toast.error("Failed to fetch officials");
     } finally {
       setLoading(false);
@@ -130,6 +131,7 @@ export default function OfficialsPage() {
         setStats(result.data);
       }
     } catch (error) {
+       console.error(error);
       console.error("Failed to fetch statistics:", error);
     }
   };
@@ -155,6 +157,7 @@ export default function OfficialsPage() {
         setOfficials(result.data);
       }
     } catch (error) {
+       console.error(error);
       toast.error("Failed to search officials");
     } finally {
       setLoading(false);
@@ -183,6 +186,7 @@ export default function OfficialsPage() {
         toast.error("Failed to create official");
       }
     } catch (error) {
+       console.error(error);
       toast.error("Failed to create official");
     }
   };
@@ -211,6 +215,7 @@ export default function OfficialsPage() {
         toast.error("Failed to update official");
       }
     } catch (error) {
+       console.error(error);
       toast.error("Failed to update official");
     }
   };
@@ -234,6 +239,7 @@ export default function OfficialsPage() {
         toast.error("Failed to delete official");
       }
     } catch (error) {
+       console.error(error);
       toast.error("Failed to delete official");
     }
   };

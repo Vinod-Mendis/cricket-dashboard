@@ -33,10 +33,12 @@ interface Team {
   updated_at: string;
 }
 interface Player {
-  player_id: string;
+  id: string; // Changed from player_id
   name: string;
   role: string;
   team_id: string;
+  team_name: string; // Added new fields from API
+  team_color: string; // Added new fields from API
 }
 
 interface Official {
@@ -55,7 +57,7 @@ interface Weather {
 export default function CreateMatchPage() {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
+  // const [players, setPlayers] = useState<Player[]>([]);
   const [officials, setOfficials] = useState<Official[]>([]);
   const [weather, setWeather] = useState<Weather[]>([]);
   const [teamAPlayers, setTeamAPlayers] = useState<Player[]>([]);
@@ -106,19 +108,19 @@ export default function CreateMatchPage() {
     }
   };
 
-  const fetchPlayers = async () => {
-    try {
-      const response = await fetch(
-        "https://cricket-score-board-v4g9.onrender.com/api/players"
-      );
-      const data = await response.json();
-      if (data.success) {
-        setPlayers(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching players:", error);
-    }
-  };
+  // const fetchPlayers = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://cricket-score-board-v4g9.onrender.com/api/players"
+  //     );
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       setPlayers(data.data);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching players:", error);
+  //   }
+  // };
 
   const fetchOfficials = async () => {
     try {
@@ -148,12 +150,29 @@ export default function CreateMatchPage() {
     }
   };
 
+  // Add these functions after your existing fetch functions
+  const fetchPlayersByTeam = async (teamId: string): Promise<Player[]> => {
+    try {
+      const response = await fetch(
+        `https://cricket-score-board-v4g9.onrender.com/api/players/team/${teamId}`
+      );
+      const data = await response.json();
+      if (data.success) {
+        return data.data;
+      }
+      return [];
+    } catch (error) {
+      console.error(`Error fetching players for team ${teamId}:`, error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       await Promise.all([
         fetchTeams(),
-        fetchPlayers(),
+        // fetchPlayers(),
         fetchOfficials(),
         fetchWeather(),
       ]);
@@ -162,44 +181,67 @@ export default function CreateMatchPage() {
     loadData();
   }, []);
 
-  // Filter players when teams are selected
+  // Update the useEffect for Team A players
   useEffect(() => {
-    if (formData.team_a_id) {
-      const filteredPlayers = players.filter(
-        (player) => player.team_id === formData.team_a_id
-      );
-      setTeamAPlayers(filteredPlayers);
-      // Initialize team A players array
-      setFormData((prev) => ({
-        ...prev,
-        team_a_players: filteredPlayers.map((player) => ({
-          player_id: player.player_id,
-          is_playing: false,
-        })),
-      }));
-    } else {
-      setTeamAPlayers([]);
-    }
-  }, [formData.team_a_id, players]);
+    const fetchTeamAPlayers = async () => {
+      if (formData.team_a_id) {
+        const players = await fetchPlayersByTeam(formData.team_a_id);
+        setTeamAPlayers(players);
+        // Only initialize if team_a_players is empty or team changed
+        setFormData((prev) => ({
+          ...prev,
+          team_a_players: players.map((player) => ({
+            player_id: player.id, // Changed from player.player_id to player.id
+            is_playing: false, // Always start with false
+          })),
+          // Reset captain and wicketkeeper when team changes
+          team_a_captain_id: "",
+          team_a_wicketkeeper_id: "",
+        }));
+      } else {
+        setTeamAPlayers([]);
+        setFormData((prev) => ({
+          ...prev,
+          team_a_players: [],
+          team_a_captain_id: "",
+          team_a_wicketkeeper_id: "",
+        }));
+      }
+    };
 
+    fetchTeamAPlayers();
+  }, [formData.team_a_id]);
+
+  // Update the useEffect for Team B players
   useEffect(() => {
-    if (formData.team_b_id) {
-      const filteredPlayers = players.filter(
-        (player) => player.team_id === formData.team_b_id
-      );
-      setTeamBPlayers(filteredPlayers);
-      // Initialize team B players array
-      setFormData((prev) => ({
-        ...prev,
-        team_b_players: filteredPlayers.map((player) => ({
-          player_id: player.player_id,
-          is_playing: false,
-        })),
-      }));
-    } else {
-      setTeamBPlayers([]);
-    }
-  }, [formData.team_b_id, players]);
+    const fetchTeamBPlayers = async () => {
+      if (formData.team_b_id) {
+        const players = await fetchPlayersByTeam(formData.team_b_id);
+        setTeamBPlayers(players);
+        // Only initialize if team_b_players is empty or team changed
+        setFormData((prev) => ({
+          ...prev,
+          team_b_players: players.map((player) => ({
+            player_id: player.id, // Changed from player.player_id to player.id
+            is_playing: false, // Always start with false
+          })),
+          // Reset captain and wicketkeeper when team changes
+          team_b_captain_id: "",
+          team_b_wicketkeeper_id: "",
+        }));
+      } else {
+        setTeamBPlayers([]);
+        setFormData((prev) => ({
+          ...prev,
+          team_b_players: [],
+          team_b_captain_id: "",
+          team_b_wicketkeeper_id: "",
+        }));
+      }
+    };
+
+    fetchTeamBPlayers();
+  }, [formData.team_b_id]);
 
   const handleCreateMatch = async () => {
     try {
@@ -224,6 +266,8 @@ export default function CreateMatchPage() {
       toast.error("Failed to create match");
     }
   };
+
+  console.log("formData : ", formData);
 
   const handlePlayerSelection = (
     teamType: "A" | "B",
@@ -265,7 +309,7 @@ export default function CreateMatchPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 px-10 mx-auto">
       <div className="mb-6">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" onClick={() => router.back()}>
@@ -283,9 +327,9 @@ export default function CreateMatchPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Left Column - General Data */}
-        <div className="space-y-6">
+        <div className="space-y-6 col-span-2">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -438,241 +482,6 @@ export default function CreateMatchPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Right Column - Team Data */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Team Selection
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Team A */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="team_a_id">Team A</Label>
-                  <Select
-                    value={formData.team_a_id}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, team_a_id: value })
-                    }>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Team A" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams.map((team) => (
-                        <SelectItem key={team.id} value={team.id.toString()}>
-                          {team.team_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {formData.team_a_id && teamAPlayers.length > 0 && (
-                  <div className="space-y-3">
-                    <Label>Team A Players</Label>
-                    <div className="max-h-48 overflow-y-auto border rounded-md p-3 space-y-2">
-                      {teamAPlayers.map((player) => (
-                        <div
-                          key={player.player_id}
-                          className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`team_a_${player.player_id}`}
-                            checked={
-                              formData.team_a_players.find(
-                                (p) => p.player_id === player.player_id
-                              )?.is_playing || false
-                            }
-                            onCheckedChange={(checked) =>
-                              handlePlayerSelection(
-                                "A",
-                                player.player_id,
-                                checked as boolean
-                              )
-                            }
-                          />
-                          <Label
-                            htmlFor={`team_a_${player.player_id}`}
-                            className="text-sm">
-                            {player.name} ({player.role})
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="team_a_captain_id">Captain</Label>
-                        <Select
-                          value={formData.team_a_captain_id}
-                          onValueChange={(value) =>
-                            setFormData({
-                              ...formData,
-                              team_a_captain_id: value,
-                            })
-                          }>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Captain" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teamAPlayers.map((player) => (
-                              <SelectItem
-                                key={player.player_id}
-                                value={player.player_id}>
-                                {player.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="team_a_wicketkeeper_id">
-                          Wicketkeeper
-                        </Label>
-                        <Select
-                          value={formData.team_a_wicketkeeper_id}
-                          onValueChange={(value) =>
-                            setFormData({
-                              ...formData,
-                              team_a_wicketkeeper_id: value,
-                            })
-                          }>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select WK" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teamAPlayers
-                              .filter((p) => p.role === "Wicketkeeper")
-                              .map((player) => (
-                                <SelectItem
-                                  key={player.player_id}
-                                  value={player.player_id}>
-                                  {player.name}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Team B */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="team_b_id">Team B</Label>
-                  <Select
-                    value={formData.team_b_id}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, team_b_id: value })
-                    }>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Team B" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams.map((team) => (
-                        <SelectItem key={team.id} value={team.id.toString()}>
-                          {team.team_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {formData.team_b_id && teamBPlayers.length > 0 && (
-                  <div className="space-y-3">
-                    <Label>Team B Players</Label>
-                    <div className="max-h-48 overflow-y-auto border rounded-md p-3 space-y-2">
-                      {teamBPlayers.map((player) => (
-                        <div
-                          key={player.player_id}
-                          className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`team_b_${player.player_id}`}
-                            checked={
-                              formData.team_b_players.find(
-                                (p) => p.player_id === player.player_id
-                              )?.is_playing || false
-                            }
-                            onCheckedChange={(checked) =>
-                              handlePlayerSelection(
-                                "B",
-                                player.player_id,
-                                checked as boolean
-                              )
-                            }
-                          />
-                          <Label
-                            htmlFor={`team_b_${player.player_id}`}
-                            className="text-sm">
-                            {player.name} ({player.role})
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="team_b_captain_id">Captain</Label>
-                        <Select
-                          value={formData.team_b_captain_id}
-                          onValueChange={(value) =>
-                            setFormData({
-                              ...formData,
-                              team_b_captain_id: value,
-                            })
-                          }>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Captain" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teamBPlayers.map((player) => (
-                              <SelectItem
-                                key={player.player_id}
-                                value={player.player_id}>
-                                {player.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="team_b_wicketkeeper_id">
-                          Wicketkeeper
-                        </Label>
-                        <Select
-                          value={formData.team_b_wicketkeeper_id}
-                          onValueChange={(value) =>
-                            setFormData({
-                              ...formData,
-                              team_b_wicketkeeper_id: value,
-                            })
-                          }>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select WK" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teamBPlayers
-                              .filter((p) => p.role === "Wicketkeeper")
-                              .map((player) => (
-                                <SelectItem
-                                  key={player.player_id}
-                                  value={player.player_id}>
-                                  {player.name}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Match Officials */}
           <Card>
@@ -767,6 +576,273 @@ export default function CreateMatchPage() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Team Data */}
+        <div className="space-y-6 col-span-3">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Team Selection
+              </CardTitle>
+            </CardHeader>
+            <CardContent className=" grid grid-cols-2 gap-4">
+              {/* Team A */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="team_a_id">Team A</Label>
+                  <Select
+                    value={formData.team_a_id}
+                    onValueChange={(value) => {
+                      if (value === formData.team_b_id) {
+                        // Swap teams if same team is selected
+                        setFormData({
+                          ...formData,
+                          team_a_id: value,
+                          team_b_id: formData.team_a_id,
+                          // Reset captain and wicketkeeper selections when swapping
+                          team_a_captain_id: "",
+                          team_a_wicketkeeper_id: "",
+                          team_b_captain_id: "",
+                          team_b_wicketkeeper_id: "",
+                        });
+                      } else {
+                        setFormData({
+                          ...formData,
+                          team_a_id: value,
+                          // Reset captain and wicketkeeper when changing team
+                          team_a_captain_id: "",
+                          team_a_wicketkeeper_id: "",
+                        });
+                      }
+                    }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Team A" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teams.map((team) => (
+                        <SelectItem key={team.id} value={team.id.toString()}>
+                          {team.team_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.team_a_id && teamAPlayers.length > 0 && (
+                  <div className="space-y-3">
+                    <Label>Team A Players</Label>
+                    <div className="h-[30rem] overflow-y-auto border rounded-md p-3 space-y-2">
+                      {teamAPlayers.map((player) => (
+                        <div
+                          key={player.id}
+                          className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`team_a_${player.id}`}
+                            checked={
+                              formData.team_a_players.find(
+                                (p) => p.player_id === player.id // This is correct
+                              )?.is_playing || false
+                            }
+                            onCheckedChange={(checked) =>
+                              handlePlayerSelection(
+                                "A",
+                                player.id,
+                                checked as boolean
+                              )
+                            }
+                          />
+                          <Label
+                            htmlFor={`team_a_${player.id}`}
+                            className="text-sm">
+                            {player.name} ({player.role})
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="team_a_captain_id">Captain</Label>
+                        <Select
+                          value={formData.team_a_captain_id}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              team_a_captain_id: value,
+                            })
+                          }>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Captain" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {teamAPlayers.map((player) => (
+                              <SelectItem key={player.id} value={player.id}>
+                                {player.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="team_a_wicketkeeper_id">
+                          Wicketkeeper
+                        </Label>
+                        <Select
+                          value={formData.team_a_wicketkeeper_id}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              team_a_wicketkeeper_id: value,
+                            })
+                          }>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select WK" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {teamAPlayers
+                              .filter((p) => p.role === "Wicket-keeper")
+                              .map((player) => (
+                                <SelectItem key={player.id} value={player.id}>
+                                  {player.name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Team B */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="team_b_id">Team B</Label>
+                  <Select
+                    value={formData.team_b_id}
+                    onValueChange={(value) => {
+                      if (value === formData.team_a_id) {
+                        // Swap teams if same team is selected
+                        setFormData({
+                          ...formData,
+                          team_b_id: value,
+                          team_a_id: formData.team_b_id,
+                          // Reset captain and wicketkeeper selections when swapping
+                          team_a_captain_id: "",
+                          team_a_wicketkeeper_id: "",
+                          team_b_captain_id: "",
+                          team_b_wicketkeeper_id: "",
+                        });
+                      } else {
+                        setFormData({
+                          ...formData,
+                          team_b_id: value,
+                          // Reset captain and wicketkeeper when changing team
+                          team_b_captain_id: "",
+                          team_b_wicketkeeper_id: "",
+                        });
+                      }
+                    }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Team B" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teams.map((team) => (
+                        <SelectItem key={team.id} value={team.id.toString()}>
+                          {team.team_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.team_b_id && teamBPlayers.length > 0 && (
+                  <div className="space-y-3">
+                    <Label>Team B Players</Label>
+                    <div className="h-[30rem] overflow-y-auto border rounded-md p-3 space-y-2">
+                      {teamBPlayers.map((player) => (
+                        <div
+                          key={player.id}
+                          className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`team_b_${player.id}`}
+                            checked={
+                              formData.team_b_players.find(
+                                (p) => p.player_id === player.id // This is correct
+                              )?.is_playing || false
+                            }
+                            onCheckedChange={(checked) =>
+                              handlePlayerSelection(
+                                "B",
+                                player.id,
+                                checked as boolean
+                              )
+                            }
+                          />
+                          <Label
+                            htmlFor={`team_b_${player.id}`}
+                            className="text-sm">
+                            {player.name} ({player.role})
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="team_b_captain_id">Captain</Label>
+                        <Select
+                          value={formData.team_b_captain_id}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              team_b_captain_id: value,
+                            })
+                          }>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Captain" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {teamBPlayers.map((player) => (
+                              <SelectItem key={player.id} value={player.id}>
+                                {player.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="team_b_wicketkeeper_id">
+                          Wicketkeeper
+                        </Label>
+                        <Select
+                          value={formData.team_b_wicketkeeper_id}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              team_b_wicketkeeper_id: value,
+                            })
+                          }>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select WK" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {teamBPlayers
+                              .filter((p) => p.role === "Wicket-keeper")
+                              .map((player) => (
+                                <SelectItem key={player.id} value={player.id}>
+                                  {player.name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

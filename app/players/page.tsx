@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useCricket } from "@/components/cricket-context";
+// import { useCricket } from "@/components/cricket-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -143,6 +143,12 @@ export default function PlayersPage() {
   const searchPlayers = async () => {
     try {
       setLoading(true);
+
+      if (!searchTerm && selectedRole === "all" && selectedTeam === "all") {
+        fetchPlayers();
+        return;
+      }
+
       const params = new URLSearchParams();
       if (searchTerm) params.append("name", searchTerm);
       if (selectedRole !== "all") params.append("role", selectedRole);
@@ -271,6 +277,14 @@ export default function PlayersPage() {
     fetchTeams();
     fetchPlayers();
   }, []);
+
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      searchPlayers();
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(delayedSearch);
+  }, [searchTerm, selectedRole, selectedTeam]);
 
   const clearFilters = () => {
     setSearchTerm("");

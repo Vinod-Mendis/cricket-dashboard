@@ -47,25 +47,25 @@ interface Team {
   logo: string
 }
 
-interface Player {
-  player_id: string
-  name: string
-  role: string
-  team_id: string
-}
+// interface Player {
+//   player_id: string
+//   name: string
+//   role: string
+//   team_id: string
+// }
 
-interface Official {
-  id: string
-  name: string
-  type: string
-}
+// interface Official {
+//   id: string
+//   name: string
+//   type: string
+// }
 
-interface Weather {
-  id: string
-  location: string
-  condition: string
-  temperature: number
-}
+// interface Weather {
+//   id: string
+//   location: string
+//   condition: string
+//   temperature: number
+// }
 
 function MatchCard({
   match,
@@ -401,6 +401,7 @@ export default function MatchesPage() {
   const liveMatches = matches.filter((match) => match.status === "LIVE")
   const scheduledMatches = matches.filter((match) => match.status === "SCHEDULED")
   const completedMatches = matches.filter((match) => match.status === "COMPLETED")
+  const abondonedMatches = matches.filter((match) => match.status === "ABANDONED")
 
   if (loading) {
     return (
@@ -471,7 +472,7 @@ export default function MatchesPage() {
       </div>
 
       <Tabs defaultValue="live" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="live" className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             Live ({liveMatches.length})
@@ -483,6 +484,10 @@ export default function MatchesPage() {
           <TabsTrigger value="completed" className="flex items-center gap-2">
             <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
             Completed ({completedMatches.length})
+          </TabsTrigger>
+          <TabsTrigger value="abondoned" className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+            Abondoned ({abondonedMatches.length})
           </TabsTrigger>
         </TabsList>
 
@@ -530,6 +535,25 @@ export default function MatchesPage() {
           {completedMatches.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {completedMatches.map((match) => (
+                <MatchCard key={match.match_id} match={match} onEdit={openEditDialog} onDelete={handleDeleteMatch} />
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Completed Matches</h3>
+                  <p className="text-muted-foreground">No matches have been completed yet.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        <TabsContent value="abondoned" className="space-y-4">
+          {abondonedMatches.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {abondonedMatches.map((match) => (
                 <MatchCard key={match.match_id} match={match} onEdit={openEditDialog} onDelete={handleDeleteMatch} />
               ))}
             </div>
