@@ -733,7 +733,7 @@ export default function PlayersPage() {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                            onClick={() => deletePlayer(player.id)}>
+                            onClick={() => deletePlayer(player.id, player.name)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
