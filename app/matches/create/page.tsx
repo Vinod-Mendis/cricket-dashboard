@@ -33,7 +33,7 @@ interface Team {
   updated_at: string;
 }
 interface Player {
-  id: string; // Changed from player_id
+  id: number; // Changed from player_id
   name: string;
   role: string;
   team_id: string;
@@ -63,6 +63,8 @@ export default function CreateMatchPage() {
   const [teamAPlayers, setTeamAPlayers] = useState<Player[]>([]);
   const [teamBPlayers, setTeamBPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
+  const [teamASearch, setTeamASearch] = useState("");
+  const [teamBSearch, setTeamBSearch] = useState("");
 
   const [formData, setFormData] = useState({
     match_id: "",
@@ -90,8 +92,8 @@ export default function CreateMatchPage() {
     winning_team_id: "",
     weather_id: "",
     day_night: false,
-    team_a_players: [] as { player_id: string; is_playing: boolean }[],
-    team_b_players: [] as { player_id: string; is_playing: boolean }[],
+    team_a_players: [] as { player_id: number; is_playing: boolean }[],
+    team_b_players: [] as { player_id: number; is_playing: boolean }[],
   });
 
   const fetchTeams = async () => {
@@ -136,19 +138,19 @@ export default function CreateMatchPage() {
     }
   };
 
-  const fetchWeather = async () => {
-    try {
-      const response = await fetch(
-        "https://cricket-score-board-v4g9.onrender.com/api/weather"
-      );
-      const data = await response.json();
-      if (data.success) {
-        setWeather(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching weather:", error);
-    }
-  };
+  // const fetchWeather = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://cricket-score-board-v4g9.onrender.com/api/weather"
+  //     );
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       setWeather(data.data);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching weather:", error);
+  //   }
+  // };
 
   // Add these functions after your existing fetch functions
   const fetchPlayersByTeam = async (teamId: string): Promise<Player[]> => {
@@ -174,7 +176,7 @@ export default function CreateMatchPage() {
         fetchTeams(),
         // fetchPlayers(),
         fetchOfficials(),
-        fetchWeather(),
+        // fetchWeather(),
       ]);
       setLoading(false);
     };
@@ -267,11 +269,9 @@ export default function CreateMatchPage() {
     }
   };
 
-  console.log("formData : ", formData);
-
   const handlePlayerSelection = (
     teamType: "A" | "B",
-    playerId: string,
+    playerId: number,
     isPlaying: boolean
   ) => {
     if (teamType === "A") {
@@ -295,6 +295,14 @@ export default function CreateMatchPage() {
     }
   };
 
+  const filteredTeamAPlayers = teamAPlayers.filter((player) =>
+    player.name.toLowerCase().includes(teamASearch.toLowerCase())
+  );
+
+  const filteredTeamBPlayers = teamBPlayers.filter((player) =>
+    player.name.toLowerCase().includes(teamBSearch.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className="p-6">
@@ -310,9 +318,13 @@ export default function CreateMatchPage() {
 
   return (
     <div className="p-6 px-10 mx-auto">
-      <div className="mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
+      <div className="mb-6 flex justify-between items-center">
+        <div className="flex items-start gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-1"
+            onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -324,6 +336,14 @@ export default function CreateMatchPage() {
               Set up a new cricket match with teams and players
             </p>
           </div>
+        </div>
+        <div className="flex justify-end gap-4 mt-8">
+          <Button variant="outline" size={"lg"} onClick={() => router.back()}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateMatch} size="lg">
+            Create Match
+          </Button>
         </div>
       </div>
 
@@ -382,39 +402,6 @@ export default function CreateMatchPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="start_time">Start Time</Label>
-                <Input
-                  id="start_time"
-                  type="datetime-local"
-                  value={formData.start_time}
-                  onChange={(e) =>
-                    setFormData({ ...formData, start_time: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="day_night"
-                  checked={formData.day_night}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, day_night: checked })
-                  }
-                />
-                <Label htmlFor="day_night">Day/Night Match</Label>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Venue & Conditions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="venue_name">Venue Name</Label>
@@ -441,6 +428,62 @@ export default function CreateMatchPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="start_time">Start Time</Label>
+                <Input
+                  id="start_time"
+                  type="datetime-local"
+                  value={formData.start_time}
+                  onChange={(e) =>
+                    setFormData({ ...formData, start_time: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex  items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="day_night"
+                    checked={formData.day_night}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, day_night: checked })
+                    }
+                  />
+                  <Label htmlFor="day_night">Day/Night Match</Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Match Status</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, status: value })
+                    }>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+                      <SelectItem value="LIVE">Live</SelectItem>
+                      <SelectItem value="COMPLETED">Completed</SelectItem>
+                      <SelectItem value="ABANDONED">Abandoned</SelectItem>
+                      <SelectItem value="RAIN_DELAY">Rain Delay</SelectItem>
+                      <SelectItem value="DRAW">Draw</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Venue & Conditions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
                 <Label htmlFor="weather_id">Weather Conditions</Label>
                 <Select
                   value={formData.weather_id}
@@ -459,29 +502,8 @@ export default function CreateMatchPage() {
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="status">Match Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, status: value })
-                  }>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SCHEDULED">Scheduled</SelectItem>
-                    <SelectItem value="LIVE">Live</SelectItem>
-                    <SelectItem value="COMPLETED">Completed</SelectItem>
-                    <SelectItem value="ABANDONED">Abandoned</SelectItem>
-                    <SelectItem value="RAIN_DELAY">Rain Delay</SelectItem>
-                    <SelectItem value="DRAW">Draw</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Match Officials */}
           <Card>
@@ -595,6 +617,7 @@ export default function CreateMatchPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="team_a_id">Team A</Label>
+
                   <Select
                     value={formData.team_a_id}
                     onValueChange={(value) => {
@@ -636,8 +659,15 @@ export default function CreateMatchPage() {
                 {formData.team_a_id && teamAPlayers.length > 0 && (
                   <div className="space-y-3">
                     <Label>Team A Players</Label>
-                    <div className="h-[30rem] overflow-y-auto border rounded-md p-3 space-y-2">
-                      {teamAPlayers.map((player) => (
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Search players..."
+                        value={teamASearch}
+                        onChange={(e) => setTeamASearch(e.target.value)}
+                      />
+                    </div>
+                    <div className="h-[28rem] overflow-y-auto border rounded-md p-3 space-y-2">
+                      {filteredTeamAPlayers.map((player) => (
                         <div
                           key={player.id}
                           className="flex items-center space-x-2">
@@ -680,7 +710,9 @@ export default function CreateMatchPage() {
                           </SelectTrigger>
                           <SelectContent>
                             {teamAPlayers.map((player) => (
-                              <SelectItem key={player.id} value={player.id}>
+                              <SelectItem
+                                key={player.id}
+                                value={player.id.toString()}>
                                 {player.name}
                               </SelectItem>
                             ))}
@@ -703,13 +735,13 @@ export default function CreateMatchPage() {
                             <SelectValue placeholder="Select WK" />
                           </SelectTrigger>
                           <SelectContent>
-                            {teamAPlayers
-                              .filter((p) => p.role === "Wicket-keeper")
-                              .map((player) => (
-                                <SelectItem key={player.id} value={player.id}>
-                                  {player.name}
-                                </SelectItem>
-                              ))}
+                            {teamAPlayers.map((player) => (
+                              <SelectItem
+                                key={player.id}
+                                value={player.id.toString()}>
+                                {player.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -763,8 +795,16 @@ export default function CreateMatchPage() {
                 {formData.team_b_id && teamBPlayers.length > 0 && (
                   <div className="space-y-3">
                     <Label>Team B Players</Label>
-                    <div className="h-[30rem] overflow-y-auto border rounded-md p-3 space-y-2">
-                      {teamBPlayers.map((player) => (
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Search players..."
+                        value={teamBSearch}
+                        onChange={(e) => setTeamBSearch(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="h-[28rem] overflow-y-auto border rounded-md p-3 space-y-2">
+                      {filteredTeamBPlayers.map((player) => (
                         <div
                           key={player.id}
                           className="flex items-center space-x-2">
@@ -807,7 +847,9 @@ export default function CreateMatchPage() {
                           </SelectTrigger>
                           <SelectContent>
                             {teamBPlayers.map((player) => (
-                              <SelectItem key={player.id} value={player.id}>
+                              <SelectItem
+                                key={player.id}
+                                value={player.id.toString()}>
                                 {player.name}
                               </SelectItem>
                             ))}
@@ -830,13 +872,13 @@ export default function CreateMatchPage() {
                             <SelectValue placeholder="Select WK" />
                           </SelectTrigger>
                           <SelectContent>
-                            {teamBPlayers
-                              .filter((p) => p.role === "Wicket-keeper")
-                              .map((player) => (
-                                <SelectItem key={player.id} value={player.id}>
-                                  {player.name}
-                                </SelectItem>
-                              ))}
+                            {teamBPlayers.map((player) => (
+                              <SelectItem
+                                key={player.id}
+                                value={player.id.toString()}>
+                                {player.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -847,15 +889,6 @@ export default function CreateMatchPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
-
-      <div className="flex justify-end gap-4 mt-8">
-        <Button variant="outline" onClick={() => router.back()}>
-          Cancel
-        </Button>
-        <Button onClick={handleCreateMatch} size="lg">
-          Create Match
-        </Button>
       </div>
     </div>
   );
