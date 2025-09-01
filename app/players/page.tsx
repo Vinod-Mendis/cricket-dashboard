@@ -139,36 +139,85 @@ export default function PlayersPage() {
       setLoading(false);
     }
   };
-
   const searchPlayers = async () => {
     try {
       setLoading(true);
 
-      if (!searchTerm && selectedRole === "all" && selectedTeam === "all") {
+      // If no search term and no filters, fetch all players
+      if (
+        !searchTerm.trim() &&
+        selectedRole === "all" &&
+        selectedTeam === "all"
+      ) {
         fetchPlayers();
         return;
       }
 
+      // If only role filter is selected (no search term, no team filter)
+      if (
+        !searchTerm.trim() &&
+        selectedRole !== "all" &&
+        selectedTeam === "all"
+      ) {
+        const response = await fetch(
+          `https://cricket-score-board-v4g9.onrender.com/api/players/role/${selectedRole}`
+        );
+        const data = await response.json();
+        if (data.success) {
+          setPlayers(data.data);
+        } else {
+          console.error("Failed to fetch players by role:", data.message);
+          setPlayers([]);
+        }
+        return;
+      }
+
+      // For all other cases (search term or multiple filters), use search API
       const params = new URLSearchParams();
-      if (searchTerm) params.append("name", searchTerm);
-      if (selectedRole !== "all") params.append("role", selectedRole);
-      if (selectedTeam !== "all") params.append("team_id", selectedTeam);
+
+      // Only add search term if it exists
+      if (searchTerm.trim()) {
+        params.append("q", searchTerm.trim());
+      }
+
+      // Add filters if selected
+      if (selectedRole !== "all") {
+        params.append("role", selectedRole);
+      }
+      if (selectedTeam !== "all") {
+        params.append("team_id", selectedTeam);
+      }
 
       const response = await fetch(
         `https://cricket-score-board-v4g9.onrender.com/api/players/search?${params.toString()}`
       );
+
       const data = await response.json();
+
       if (data.success) {
         setPlayers(data.data);
+      } else {
+        console.error("Search failed:", data.message);
+        setPlayers([]);
       }
     } catch (error) {
       console.error("Failed to search players:", error);
+      setPlayers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const deletePlayer = async (playerId: string) => {
+  const deletePlayer = async (playerId: string, playerName: string) => {
+    // Show confirmation alert
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${playerName}"?\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmed) {
+      return; // User cancelled
+    }
+
     try {
       const response = await fetch(
         `https://cricket-score-board-v4g9.onrender.com/api/players/${playerId}`,
@@ -178,10 +227,17 @@ export default function PlayersPage() {
       );
       const data = await response.json();
       if (data.success) {
+        // Show success alert
+        // alert(`Player "${playerName}" has been successfully deleted.`);
         fetchPlayers(); // Refresh the list
+      } else {
+        // Show error alert
+        alert(`Failed to delete player: ${data.message || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Failed to delete player:", error);
+      // Show error alert
+      alert("An error occurred while deleting the player. Please try again.");
     }
   };
 
