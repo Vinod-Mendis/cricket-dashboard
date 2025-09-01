@@ -1,50 +1,71 @@
-"use client"
+/** @format */
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Clock, MapPin, Trophy, Plus, Search, Edit, Trash2 } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+"use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Clock,
+  MapPin,
+  Trophy,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Match {
-  match_id: string
-  title: string
-  start_time: string
-  match_type: string
-  status: string
-  team_a_id: string
-  team_b_id: string
-  toss_decision: string | null
-  winning_team_id: string | null
-  day_night: boolean
-  team_a_name: string
-  team_a_color: string
-  team_b_name: string
-  team_b_color: string
-  winning_team_name: string | null
-  weather_condition: string
-  temperature: number
-  venue_name?: string
-  venue_city?: string
+  match_id: string;
+  title: string;
+  start_time: string;
+  match_type: string;
+  status: string;
+  team_a_id: string;
+  team_b_id: string;
+  toss_decision: string | null;
+  winning_team_id: string | null;
+  day_night: boolean;
+  team_a_name: string;
+  team_a_color: string;
+  team_b_name: string;
+  team_b_color: string;
+  winning_team_name: string | null;
+  weather_condition: string;
+  temperature: number;
+  venue_name?: string;
+  venue_city?: string;
 }
 
 interface Team {
-  team_id: string
-  full_name: string
-  short_name: string
+  team_id: string;
+  full_name: string;
+  short_name: string;
   colors: {
-    primary: string
-    secondary: string
-    extra: string
-  }
-  logo: string
+    primary: string;
+    secondary: string;
+    extra: string;
+  };
+  logo: string;
 }
 
 // interface Player {
@@ -71,30 +92,34 @@ function MatchCard({
   match,
   onEdit,
   onDelete,
-}: { match: Match; onEdit: (match: Match) => void; onDelete: (matchId: string) => void }) {
-  const router = useRouter()
+}: {
+  match: Match;
+  onEdit: (match: Match) => void;
+  onDelete: (matchId: string) => void;
+}) {
+  const router = useRouter();
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case "LIVE":
-        return "bg-green-500"
+        return "bg-green-500";
       case "SCHEDULED":
-        return "bg-blue-500"
+        return "bg-blue-500";
       case "COMPLETED":
-        return "bg-gray-500"
+        return "bg-gray-500";
       case "ABANDONED":
-        return "bg-red-500"
+        return "bg-red-500";
       case "RAIN_DELAY":
-        return "bg-yellow-500"
+        return "bg-yellow-500";
       case "DRAW":
-        return "bg-purple-500"
+        return "bg-purple-500";
       default:
-        return "bg-gray-500"
+        return "bg-gray-500";
     }
-  }
+  };
 
   const formatDateTime = (dateTime: string) => {
-    const date = new Date(dateTime)
+    const date = new Date(dateTime);
     return {
       date: date.toLocaleDateString("en-US", {
         month: "short",
@@ -105,22 +130,27 @@ function MatchCard({
         hour: "2-digit",
         minute: "2-digit",
       }),
-    }
-  }
+    };
+  };
 
-  const { date, time } = formatDateTime(match.start_time)
+  const { date, time } = formatDateTime(match.start_time);
 
   const handleCardClick = () => {
-    router.push(`/match/${match.match_id}`)
-  }
+    router.push(`/match/${match.match_id}`);
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow cursor-pointer group">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">{match.match_type}</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {match.match_type}
+          </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge className={`${getStatusColor(match.status)} text-white capitalize`}>
+            <Badge
+              className={`${getStatusColor(
+                match.status
+              )} text-white capitalize`}>
               {match.status.toLowerCase()}
             </Badge>
             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
@@ -128,20 +158,18 @@ function MatchCard({
                 size="sm"
                 variant="outline"
                 onClick={(e) => {
-                  e.stopPropagation()
-                  onEdit(match)
-                }}
-              >
+                  e.stopPropagation();
+                  onEdit(match);
+                }}>
                 <Edit className="h-3 w-3" />
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={(e) => {
-                  e.stopPropagation()
-                  onDelete(match.match_id)
-                }}
-              >
+                  e.stopPropagation();
+                  onDelete(match.match_id);
+                }}>
                 <Trash2 className="h-3 w-3" />
               </Button>
             </div>
@@ -157,8 +185,7 @@ function MatchCard({
           <div className="flex items-center gap-3">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-              style={{ backgroundColor: match.team_a_color }}
-            >
+              style={{ backgroundColor: match.team_a_color }}>
               {match.team_a_name.substring(0, 3).toUpperCase()}
             </div>
             <div>
@@ -174,8 +201,7 @@ function MatchCard({
             </div>
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-              style={{ backgroundColor: match.team_b_color }}
-            >
+              style={{ backgroundColor: match.team_b_color }}>
               {match.team_b_name.substring(0, 3).toUpperCase()}
             </div>
           </div>
@@ -216,20 +242,20 @@ function MatchCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export default function MatchesPage() {
-  const [matches, setMatches] = useState<Match[]>([])
-  const [teams, setTeams] = useState<Team[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterType, setFilterType] = useState("T20")
-  const [filterStatus, setFilterStatus] = useState("SCHEDULED")
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [editingMatch, setEditingMatch] = useState<Match | null>(null)
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("T20");
+  const [filterStatus, setFilterStatus] = useState("SCHEDULED");
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingMatch, setEditingMatch] = useState<Match | null>(null);
 
-  const router = useRouter()
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     match_id: "",
@@ -243,75 +269,81 @@ export default function MatchesPage() {
     status: "SCHEDULED",
     winning_team_id: "",
     day_night: false,
-  })
+  });
 
   const fetchMatches = async () => {
     try {
-      const response = await fetch("https://cricket-score-board-v4g9.onrender.com/api/matches")
-      const data = await response.json()
+      const response = await fetch(
+        "https://cricket-score-board-v4g9.onrender.com/api/matches"
+      );
+      const data = await response.json();
       if (data.success) {
-        setMatches(data.data)
+        setMatches(data.data);
       }
     } catch (error) {
-      console.error("Error fetching matches:", error)
-      toast.error("Failed to fetch matches")
+      console.error("Error fetching matches:", error);
+      toast.error("Failed to fetch matches");
     }
-  }
+  };
 
   const fetchTeams = async () => {
     try {
-      const response = await fetch("https://cricket-score-board-v4g9.onrender.com/api/teams")
-      const data = await response.json()
+      const response = await fetch(
+        "https://cricket-score-board-v4g9.onrender.com/api/teams"
+      );
+      const data = await response.json();
       if (data.success) {
-        setTeams(data.data)
+        setTeams(data.data);
       }
     } catch (error) {
-      console.error("Error fetching teams:", error)
+      console.error("Error fetching teams:", error);
     }
-  }
+  };
 
   useEffect(() => {
     const loadData = async () => {
-      setLoading(true)
-      await Promise.all([fetchMatches(), fetchTeams()])
-      setLoading(false)
-    }
-    loadData()
-  }, [])
+      setLoading(true);
+      await Promise.all([fetchMatches(), fetchTeams()]);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
 
   const searchMatches = async () => {
     if (!searchQuery && filterType === "all" && filterStatus === "all") {
-      fetchMatches()
-      return
+      fetchMatches();
+      return;
     }
 
     try {
-      const params = new URLSearchParams()
-      if (searchQuery) params.append("title", searchQuery)
-      if (filterType !== "all") params.append("match_type", filterType)
-      if (filterStatus !== "all") params.append("status", filterStatus)
+      const params = new URLSearchParams();
+      if (searchQuery) params.append("title", searchQuery);
+      if (filterType !== "all") params.append("match_type", filterType);
+      if (filterStatus !== "all") params.append("status", filterStatus);
 
-      const response = await fetch(`https://cricket-score-board-v4g9.onrender.com/api/matches/search?${params}`)
-      const data = await response.json()
+      const response = await fetch(
+        `https://cricket-score-board-v4g9.onrender.com/api/matches/search?${params}`
+      );
+      const data = await response.json();
       if (data.success) {
-        setMatches(data.data)
+        setMatches(data.data);
       }
     } catch (error) {
-      console.error("Error searching matches:", error)
-      toast.error("Failed to search matches")
+      console.error("Error searching matches:", error);
+      toast.error("Failed to search matches");
     }
-  }
+  };
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      searchMatches()
-    }, 300)
+      searchMatches();
+    }, 300);
 
-    return () => clearTimeout(debounceTimer)
-  }, [searchQuery, filterType, filterStatus])
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, filterType, filterStatus]);
 
   const handleEditMatch = async () => {
-    if (!editingMatch) return
+    if (!editingMatch) return;
 
     try {
       const response = await fetch(
@@ -320,45 +352,48 @@ export default function MatchesPage() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
-        },
-      )
+        }
+      );
 
-      const data = await response.json()
+      const data = await response.json();
       if (data.success) {
-        toast.success("Match updated successfully")
-        setIsEditDialogOpen(false)
-        setEditingMatch(null)
-        resetForm()
-        fetchMatches()
+        toast.success("Match updated successfully");
+        setIsEditDialogOpen(false);
+        setEditingMatch(null);
+        resetForm();
+        fetchMatches();
       } else {
-        toast.error(data.error?.message || "Failed to update match")
+        toast.error(data.error?.message || "Failed to update match");
       }
     } catch (error) {
-      console.error("Error updating match:", error)
-      toast.error("Failed to update match")
+      console.error("Error updating match:", error);
+      toast.error("Failed to update match");
     }
-  }
+  };
 
   const handleDeleteMatch = async (matchId: string) => {
-    if (!confirm("Are you sure you want to delete this match?")) return
+    if (!confirm("Are you sure you want to delete this match?")) return;
 
     try {
-      const response = await fetch(`https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`, {
-        method: "DELETE",
-      })
+      const response = await fetch(
+        `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      const data = await response.json()
+      const data = await response.json();
       if (data.success) {
-        toast.success("Match deleted successfully")
-        fetchMatches()
+        toast.success("Match deleted successfully");
+        fetchMatches();
       } else {
-        toast.error(data.error?.message || "Failed to delete match")
+        toast.error(data.error?.message || "Failed to delete match");
       }
     } catch (error) {
-      console.error("Error deleting match:", error)
-      toast.error("Failed to delete match")
+      console.error("Error deleting match:", error);
+      toast.error("Failed to delete match");
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -373,11 +408,11 @@ export default function MatchesPage() {
       status: "SCHEDULED",
       winning_team_id: "",
       day_night: false,
-    })
-  }
+    });
+  };
 
   const openEditDialog = (match: Match) => {
-    setEditingMatch(match)
+    setEditingMatch(match);
     setFormData({
       match_id: match.match_id,
       match_type: match.match_type,
@@ -390,18 +425,24 @@ export default function MatchesPage() {
       status: match.status,
       winning_team_id: match.winning_team_id || "",
       day_night: match.day_night,
-    })
-    setIsEditDialogOpen(true)
-  }
+    });
+    setIsEditDialogOpen(true);
+  };
 
   const handleCreateMatch = () => {
-    router.push("/matches/create")
-  }
+    router.push("/matches/create");
+  };
 
-  const liveMatches = matches.filter((match) => match.status === "LIVE")
-  const scheduledMatches = matches.filter((match) => match.status === "SCHEDULED")
-  const completedMatches = matches.filter((match) => match.status === "COMPLETED")
-  const abondonedMatches = matches.filter((match) => match.status === "ABANDONED")
+  const liveMatches = matches.filter((match) => match.status === "LIVE");
+  const scheduledMatches = matches.filter(
+    (match) => match.status === "SCHEDULED"
+  );
+  const completedMatches = matches.filter(
+    (match) => match.status === "COMPLETED"
+  );
+  const abondonedMatches = matches.filter(
+    (match) => match.status === "ABANDONED"
+  );
 
   if (loading) {
     return (
@@ -413,7 +454,7 @@ export default function MatchesPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -422,7 +463,9 @@ export default function MatchesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-balance">Cricket Matches</h1>
-            <p className="text-muted-foreground mt-2">Track ongoing, scheduled, and completed cricket matches</p>
+            <p className="text-muted-foreground mt-2">
+              Track ongoing, scheduled, and completed cricket matches
+            </p>
           </div>
           <Button onClick={handleCreateMatch}>
             <Plus className="h-4 w-4 mr-2" />
@@ -495,7 +538,12 @@ export default function MatchesPage() {
           {liveMatches.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {liveMatches.map((match) => (
-                <MatchCard key={match.match_id} match={match} onEdit={openEditDialog} onDelete={handleDeleteMatch} />
+                <MatchCard
+                  key={match.match_id}
+                  match={match}
+                  onEdit={openEditDialog}
+                  onDelete={handleDeleteMatch}
+                />
               ))}
             </div>
           ) : (
@@ -503,8 +551,12 @@ export default function MatchesPage() {
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Live Matches</h3>
-                  <p className="text-muted-foreground">There are currently no matches in progress.</p>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Live Matches
+                  </h3>
+                  <p className="text-muted-foreground">
+                    There are currently no matches in progress.
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -515,7 +567,12 @@ export default function MatchesPage() {
           {scheduledMatches.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {scheduledMatches.map((match) => (
-                <MatchCard key={match.match_id} match={match} onEdit={openEditDialog} onDelete={handleDeleteMatch} />
+                <MatchCard
+                  key={match.match_id}
+                  match={match}
+                  onEdit={openEditDialog}
+                  onDelete={handleDeleteMatch}
+                />
               ))}
             </div>
           ) : (
@@ -523,8 +580,12 @@ export default function MatchesPage() {
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Scheduled Matches</h3>
-                  <p className="text-muted-foreground">There are no upcoming matches scheduled.</p>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Scheduled Matches
+                  </h3>
+                  <p className="text-muted-foreground">
+                    There are no upcoming matches scheduled.
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -535,7 +596,12 @@ export default function MatchesPage() {
           {completedMatches.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {completedMatches.map((match) => (
-                <MatchCard key={match.match_id} match={match} onEdit={openEditDialog} onDelete={handleDeleteMatch} />
+                <MatchCard
+                  key={match.match_id}
+                  match={match}
+                  onEdit={openEditDialog}
+                  onDelete={handleDeleteMatch}
+                />
               ))}
             </div>
           ) : (
@@ -543,8 +609,12 @@ export default function MatchesPage() {
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Completed Matches</h3>
-                  <p className="text-muted-foreground">No matches have been completed yet.</p>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Completed Matches
+                  </h3>
+                  <p className="text-muted-foreground">
+                    No matches have been completed yet.
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -554,7 +624,12 @@ export default function MatchesPage() {
           {abondonedMatches.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {abondonedMatches.map((match) => (
-                <MatchCard key={match.match_id} match={match} onEdit={openEditDialog} onDelete={handleDeleteMatch} />
+                <MatchCard
+                  key={match.match_id}
+                  match={match}
+                  onEdit={openEditDialog}
+                  onDelete={handleDeleteMatch}
+                />
               ))}
             </div>
           ) : (
@@ -562,8 +637,12 @@ export default function MatchesPage() {
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Completed Matches</h3>
-                  <p className="text-muted-foreground">No matches have been completed yet.</p>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Completed Matches
+                  </h3>
+                  <p className="text-muted-foreground">
+                    No matches have been completed yet.
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -572,7 +651,7 @@ export default function MatchesPage() {
       </Tabs>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-full max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Match</DialogTitle>
           </DialogHeader>
@@ -582,14 +661,20 @@ export default function MatchesPage() {
               <Input
                 id="edit_title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit_status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, status: value })
+                  }>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -607,25 +692,34 @@ export default function MatchesPage() {
                 <Label htmlFor="edit_winning_team">Winning Team</Label>
                 <Select
                   value={formData.winning_team_id}
-                  onValueChange={(value) => setFormData({ ...formData, winning_team_id: value })}
-                >
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, winning_team_id: value })
+                  }>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Winner" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Winner</SelectItem>
-                    {teams.map((team) => (
-                      <SelectItem key={team.team_id} value={team.team_id}>
-                        {team.full_name}
-                      </SelectItem>
-                    ))}
+                    {/* Only show the two teams of this match */}
+                    {editingMatch && (
+                      <>
+                        <SelectItem className="uppercase" value={editingMatch.team_a_id}>
+                          {editingMatch.team_a_name}
+                        </SelectItem>
+                        <SelectItem className="uppercase" value={editingMatch.team_b_id}>
+                          {editingMatch.team_b_name}
+                        </SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleEditMatch}>Update Match</Button>
@@ -634,5 +728,5 @@ export default function MatchesPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
