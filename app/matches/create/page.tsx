@@ -365,7 +365,10 @@ export default function CreateMatchPage() {
                     id="match_id"
                     value={formData.match_id}
                     onChange={(e) =>
-                      setFormData({ ...formData, match_id: e.target.value })
+                      setFormData({
+                        ...formData,
+                        match_id: e.target.value.replace(/\s/g, ""), // Remove spaces
+                      })
                     }
                     placeholder="T20-001"
                   />
