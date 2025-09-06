@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { User, Search, Trash2, Edit, Plus } from "lucide-react";
+import { CreatePlayerDialog } from "@/components/modals/create-player-dialog";
 
 interface Player {
   id: string;
@@ -87,8 +88,6 @@ export default function PlayersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
   const [newPlayer, setNewPlayer] = useState({
     name: "",
     short_name: "",
@@ -241,51 +240,6 @@ export default function PlayersPage() {
     }
   };
 
-  const createPlayer = async () => {
-    try {
-      setIsCreating(true);
-      const playerData = {
-        ...newPlayer,
-        age: Number.parseInt(newPlayer.age) || 0,
-        shirt_number: Number.parseInt(newPlayer.shirt_number) || 0,
-      };
-
-      const response = await fetch(
-        "https://cricket-score-board-v4g9.onrender.com/api/players",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(playerData),
-        }
-      );
-
-      const data = await response.json();
-      if (data.success) {
-        setIsCreateDialogOpen(false);
-        setNewPlayer({
-          name: "",
-          short_name: "",
-          role: "",
-          batting_style: "",
-          bowling_style: "",
-          age: "",
-          image: "",
-          shirt_number: "",
-          team_id: "",
-          last_match_date: "",
-          career_span: "",
-        });
-        fetchPlayers(); // Refresh the list
-      }
-    } catch (error) {
-      console.error("Failed to create player:", error);
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
   const updatePlayer = async () => {
     if (!editingPlayer) return;
 
@@ -366,232 +320,12 @@ export default function PlayersPage() {
               Complete roster of all cricket players and their details
             </p>
           </div>
-          <Dialog
-            open={isCreateDialogOpen}
-            onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Create Player
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create New Player</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      value={newPlayer.name}
-                      onChange={(e) =>
-                        setNewPlayer({ ...newPlayer, name: e.target.value })
-                      }
-                      placeholder="e.g., Rohit Sharma"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="short_name">Short Name</Label>
-                    <Input
-                      id="short_name"
-                      value={newPlayer.short_name}
-                      onChange={(e) =>
-                        setNewPlayer({
-                          ...newPlayer,
-                          short_name: e.target.value,
-                        })
-                      }
-                      placeholder="e.g., R. Sharma"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role *</Label>
-                    <Select
-                      value={newPlayer.role}
-                      onValueChange={(value) =>
-                        setNewPlayer({ ...newPlayer, role: value })
-                      }>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Batsman">Batsman</SelectItem>
-                        <SelectItem value="Bowler">Bowler</SelectItem>
-                        <SelectItem value="All-rounder">All-rounder</SelectItem>
-                        <SelectItem value="Wicket-keeper">
-                          Wicket-keeper
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="team">Team</Label>
-                    <Select
-                      value={newPlayer.team_id}
-                      onValueChange={(value) =>
-                        setNewPlayer({ ...newPlayer, team_id: value })
-                      }>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select team" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No team</SelectItem>
-                        {teams.map((team) => (
-                          <SelectItem key={team.id} value={team.id.toString()}>
-                            {team.team_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="batting_style">Batting Style</Label>
-                    <Select
-                      value={newPlayer.batting_style}
-                      onValueChange={(value) =>
-                        setNewPlayer({ ...newPlayer, batting_style: value })
-                      }>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select batting style" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Right-handed">
-                          Right-handed
-                        </SelectItem>
-                        <SelectItem value="Left-handed">Left-handed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bowling_style">Bowling Style</Label>
-                    <Select
-                      value={newPlayer.bowling_style}
-                      onValueChange={(value) =>
-                        setNewPlayer({ ...newPlayer, bowling_style: value })
-                      }>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select bowling style" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Right-arm Fast">
-                          Right-arm Fast
-                        </SelectItem>
-                        <SelectItem value="Left-arm Fast">
-                          Left-arm Fast
-                        </SelectItem>
-                        <SelectItem value="Right-arm Off-break">
-                          Right-arm Off-break
-                        </SelectItem>
-                        <SelectItem value="Left-arm Orthodox">
-                          Left-arm Orthodox
-                        </SelectItem>
-                        <SelectItem value="Right-arm Leg-break">
-                          Right-arm Leg-break
-                        </SelectItem>
-                        <SelectItem value="Left-arm Chinaman">
-                          Left-arm Chinaman
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
-                    <Input
-                      id="age"
-                      type="number"
-                      value={newPlayer.age}
-                      onChange={(e) =>
-                        setNewPlayer({ ...newPlayer, age: e.target.value })
-                      }
-                      placeholder="e.g., 35"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="shirt_number">Shirt Number</Label>
-                    <Input
-                      id="shirt_number"
-                      type="number"
-                      value={newPlayer.shirt_number}
-                      onChange={(e) =>
-                        setNewPlayer({
-                          ...newPlayer,
-                          shirt_number: e.target.value,
-                        })
-                      }
-                      placeholder="e.g., 45"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="image">Image URL</Label>
-                  <Input
-                    id="image"
-                    value={newPlayer.image}
-                    onChange={(e) =>
-                      setNewPlayer({ ...newPlayer, image: e.target.value })
-                    }
-                    placeholder="http://example.com/player.jpg"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="last_match_date">Last Match Date</Label>
-                    <Input
-                      id="last_match_date"
-                      type="date"
-                      value={newPlayer.last_match_date}
-                      onChange={(e) =>
-                        setNewPlayer({
-                          ...newPlayer,
-                          last_match_date: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="career_span">Career Span</Label>
-                    <Input
-                      id="career_span"
-                      value={newPlayer.career_span}
-                      onChange={(e) =>
-                        setNewPlayer({
-                          ...newPlayer,
-                          career_span: e.target.value,
-                        })
-                      }
-                      placeholder="e.g., 2007-Present"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsCreateDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={createPlayer}
-                    disabled={isCreating || !newPlayer.name || !newPlayer.role}>
-                    {isCreating ? "Creating..." : "Create Player"}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <CreatePlayerDialog
+            onPlayerCreated={fetchPlayers}
+            triggerText="Create Player"
+            showTeamSelection={true}
+            triggerClassName=""
+          />
         </div>
       </div>
 
@@ -733,7 +467,9 @@ export default function PlayersPage() {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                            onClick={() => deletePlayer(player.id, player.name)}>
+                            onClick={() =>
+                              deletePlayer(player.id, player.name)
+                            }>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
