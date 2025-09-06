@@ -17,6 +17,13 @@ import {
   Thermometer,
 } from "lucide-react";
 import { toast } from "sonner";
+import ScoreSummary from "@/components/match/score-summary";
+import PlayControl from "@/components/match/play-control";
+import ScreenButtons from "@/components/match/screen-buttons";
+import Scoring from "@/components/match/scoring";
+import PreviewData from "@/components/match/preview-data";
+import BallByBall from "@/components/match/ball-by-ball";
+import Players from "@/components/match/players";
 
 interface MatchDetails {
   match_id: string;
@@ -107,22 +114,30 @@ export default function MatchDetailsPage() {
 
   const [matchDetails, setMatchDetails] = useState<MatchDetails | null>(null);
   const [squads, setSquads] = useState<{ [key: string]: Squad }>({});
+  const [innings, setInnings] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  console.log("Squads :", squads);
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
       try {
-        const [matchResponse, squadResponse] = await Promise.all([
-          fetch(
-            `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`
-          ),
-          fetch(
-            `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}/squads`
-          ),
-        ]);
+        const [matchResponse, squadResponse, inningsResponse] =
+          await Promise.all([
+            fetch(
+              `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`
+            ),
+            fetch(
+              `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}/squads`
+            ),
+            fetch(
+              `https://cricket-score-board-v4g9.onrender.com/api/innings/match/${matchId}`
+            ),
+          ]);
 
         const matchData = await matchResponse.json();
         const squadData = await squadResponse.json();
+        const inningsData = await inningsResponse.json();
 
         if (matchData.success) {
           setMatchDetails(matchData.data);
@@ -130,6 +145,11 @@ export default function MatchDetailsPage() {
 
         if (squadData.success) {
           setSquads(squadData.data.squads);
+        }
+
+        if (inningsData.success) {
+          // You'll need to add this state variable
+          setInnings(inningsData.data); // or however the response is structured
         }
       } catch (error) {
         console.error("Error fetching match details:", error);
@@ -198,37 +218,56 @@ export default function MatchDetailsPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <Button
-          variant="outline"
-          onClick={() => router.push("/matches")}
-          className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Matches
-        </Button>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-balance">
-              {matchDetails.title}
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Match ID: {matchDetails.match_id}
-            </p>
+        <div className="flex justify-between">
+          <div className="flex gap-4 items-center">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/matches")}
+              className="">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Matches
+            </Button>
+            <div className="flex gap-4 items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-balance">
+                  {matchDetails.title}
+                </h1>
+                <p className="text-muted-foreground">
+                  Match ID: {matchDetails.match_id}
+                </p>
+              </div>
+              <Badge
+                className={`${getStatusColor(
+                  matchDetails.status
+                )} text-white capitalize`}>
+                {matchDetails.status.toLowerCase()}
+              </Badge>
+            </div>
           </div>
-          <Badge
-            className={`${getStatusColor(
-              matchDetails.status
-            )} text-white capitalize`}>
-            {matchDetails.status.toLowerCase()}
-          </Badge>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="flex flex-col gap-4 ">
+        <div className="grid grid-cols-5 gap-4">
+          <div className="col-span-4 flex flex-col gap-4">
+            <ScoreSummary matchId={matchId} />
+            <PlayControl />
+            <Scoring />
+          </div>
+          <ScreenButtons />
+        </div>
+        <div className="grid grid-cols-7 gap-4 h-[18rem]">
+          <PreviewData />
+          <BallByBall inningId={5} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Players squads={squads} matchId={matchId} />
+        </div>
+
         {/* Match Overview */}
         <div className="lg:col-span-2 space-y-6">
           {/* Teams */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
@@ -278,7 +317,7 @@ export default function MatchDetailsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Toss Information */}
           {matchDetails.toss && (
@@ -323,7 +362,7 @@ export default function MatchDetailsPage() {
                 <div className="font-semibold">{matchDetails.venue}</div>
               </div>
 
-              <div className="pt-2 border-t">
+              {/* <div className="pt-2 border-t">
                 <div className="flex items-center gap-2 mb-2">
                   <CloudSun className="h-4 w-4" />
                   <span className="font-medium">
@@ -340,7 +379,7 @@ export default function MatchDetailsPage() {
                 <div className="text-sm text-muted-foreground">
                   Wind: {matchDetails.weather.wind_speed} km/h
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
 
@@ -380,7 +419,7 @@ export default function MatchDetailsPage() {
       </div>
 
       {/* Team Squads */}
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <Tabs defaultValue={Object.keys(squads)[0]} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
             {Object.values(squads).map((squad) => (
@@ -393,7 +432,6 @@ export default function MatchDetailsPage() {
           {Object.entries(squads).map(([teamId, squad]) => (
             <TabsContent key={teamId} value={teamId} className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2">
-                {/* Playing XI */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
@@ -432,8 +470,6 @@ export default function MatchDetailsPage() {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Bench */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
@@ -472,7 +508,7 @@ export default function MatchDetailsPage() {
             </TabsContent>
           ))}
         </Tabs>
-      </div>
+      </div> */}
     </div>
   );
 }
