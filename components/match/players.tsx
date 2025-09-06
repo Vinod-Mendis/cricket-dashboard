@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { useState } from "react";
+import EditPlayerDialog from "./SqaudEditPlayerDialog";
 
 // Player type
 interface Player {
@@ -65,6 +66,9 @@ export default function Players({ squads, matchId, onRefresh }: any) {
   const [selectedBenchPlayerId, setSelectedBenchPlayerId] = useState<
     string | null
   >(null);
+  // Remove editFormData state, keep only these:
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
 
   // Extract teams from squads data
   const team1 = squads?.team_2 || null;
@@ -270,18 +274,36 @@ export default function Players({ squads, matchId, onRefresh }: any) {
         } ${reverse ? "flex-row-reverse" : ""} ${isBench ? "opacity-60" : ""}`}>
         {/* Replace Button - Only for playing players */}
         {!isBench && (
-          <div className={`${reverse ? "ml-2" : "mr-2"}`}>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={isLoading}
-              onClick={handleReplace}
-              className={`h-6 px-2 text-xs ${
-                isLoading ? "opacity-50 cursor-not-allowed" : ""
-              }`}>
-              Replace
-            </Button>
-          </div>
+          <>
+            <div className={`${reverse ? "ml-2" : "mr-2"}`}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isLoading}
+                onClick={handleReplace}
+                className={`h-6 px-2 text-xs ${
+                  isLoading ? "opacity-50 cursor-not-allowed" : ""
+                }`}>
+                Replace
+              </Button>
+            </div>
+            {/* Edit Button - For all players */}
+            <div className={`${reverse ? "ml-2" : "mr-2"}`}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isLoading}
+                onClick={() => {
+                  setEditingPlayer(player);
+                  setEditDialogOpen(true);
+                }}
+                className={`h-6 px-2 text-xs ${
+                  isLoading ? "opacity-50 cursor-not-allowed" : ""
+                }`}>
+                Edit
+              </Button>
+            </div>
+          </>
         )}
 
         {/* Player name with role and indicators */}
@@ -459,6 +481,28 @@ export default function Players({ squads, matchId, onRefresh }: any) {
 
       {/* Replace Dialog */}
       <ReplaceDialog />
+
+      {/* Edit Dialog */}
+      <EditPlayerDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        player={editingPlayer}
+        onSuccess={() => {
+          setEditingPlayer(null);
+          if (onRefresh) {
+            onRefresh();
+          } else {
+            window.location.reload();
+          }
+        }}
+        loading={loadingPlayers[`edit-${editingPlayer?.player_id}`] || false}
+        onLoadingChange={(loading) => {
+          if (editingPlayer) {
+            const key = `edit-${editingPlayer.player_id}`;
+            setLoadingPlayers((prev) => ({ ...prev, [key]: loading }));
+          }
+        }}
+      />
     </>
   );
 }
