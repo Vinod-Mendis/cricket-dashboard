@@ -104,7 +104,7 @@ export default function BallByBall({ inningId }: ballByBallProps) {
 
   if (loading) {
     return (
-      <Card className="w-full flex-1 h-full overflow-y-auto col-span-4">
+      <Card className="w-full flex-1 h-full overflow-y-auto col-span-1">
         <CardHeader>
           <CardTitle>Ball By Ball</CardTitle>
         </CardHeader>
@@ -119,7 +119,7 @@ export default function BallByBall({ inningId }: ballByBallProps) {
 
   if (error) {
     return (
-      <Card className="w-full flex-1 h-full overflow-y-auto col-span-4">
+      <Card className="w-full flex-1 h-full overflow-y-auto col-span-1">
         <CardHeader>
           <CardTitle>Ball By Ball</CardTitle>
         </CardHeader>
@@ -133,7 +133,7 @@ export default function BallByBall({ inningId }: ballByBallProps) {
   }
 
   return (
-    <Card className="w-full flex-1 h-full overflow-y-auto col-span-4">
+    <Card className="w-full flex-1 h-full overflow-y-auto col-span-1">
       <CardHeader>
         <CardTitle>Ball By Ball</CardTitle>
       </CardHeader>

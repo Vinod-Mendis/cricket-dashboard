@@ -7,10 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowLeft,
-  Trophy,
-} from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import ScoreSummary from "@/components/match/score-summary";
 import PlayControl from "@/components/match/play-control";
@@ -111,26 +108,22 @@ export default function MatchDetailsPage() {
   const [squads, setSquads] = useState<{ [key: string]: Squad }>({});
   const [innings, setInnings] = useState(null);
   const [loading, setLoading] = useState(true);
-  
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
       try {
-        const [
-          matchResponse,
-          squadResponse,
-          inningsResponse,
-        ] = await Promise.all([
-          fetch(
-            `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`
-          ),
-          fetch(
-            `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}/squads`
-          ),
-          fetch(
-            `https://cricket-score-board-v4g9.onrender.com/api/innings/match/${matchId}`
-          ),
-        ]);
+        const [matchResponse, squadResponse, inningsResponse] =
+          await Promise.all([
+            fetch(
+              `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`
+            ),
+            fetch(
+              `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}/squads`
+            ),
+            fetch(
+              `https://cricket-score-board-v4g9.onrender.com/api/innings/match/${matchId}`
+            ),
+          ]);
 
         const matchData = await matchResponse.json();
         const squadData = await squadResponse.json();
@@ -148,7 +141,6 @@ export default function MatchDetailsPage() {
           // You'll need to add this state variable
           setInnings(inningsData.data); // or however the response is structured
           console.log(innings);
-          
         }
       } catch (error) {
         console.error("Error fetching match details:", error);
@@ -256,14 +248,14 @@ export default function MatchDetailsPage() {
             </div>
             <ScreenButtons />
           </div>
-          <div className="grid grid-cols-7 gap-4 h-[18rem]">
-            <div className="col-span-3 flex flex-col gap-4">
-              <PreviewData />
-              <Players squads={squads} matchId={matchId} />
-            </div>
+          <div className="grid grid-cols-2 gap-4 h-[18rem]">
+            <PreviewData />
+            <div className="col-span-1 w-full h-full"></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Players squads={squads} matchId={matchId} />
             <BallByBall inningId={5} />
           </div>
-          <div className="grid grid-cols-2 gap-4"></div>
 
           {/* Match Overview */}
           <div className="lg:col-span-2 space-y-6">

@@ -62,7 +62,7 @@ export default function PreviewData() {
 
   return (
     <>
-      <Card className="w-full col-span-3">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-lg">Preview Form-Data</CardTitle>
         </CardHeader>
