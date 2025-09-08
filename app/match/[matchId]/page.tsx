@@ -16,6 +16,7 @@ import Scoring from "@/components/match/scoring";
 import PreviewData from "@/components/match/preview-data";
 import BallByBall from "@/components/match/ball-by-ball";
 import Players from "@/components/match/players";
+import ButtonPanel from "@/components/match/button-panel";
 
 interface MatchDetails {
   match_id: string;
@@ -250,7 +251,7 @@ export default function MatchDetailsPage() {
           </div>
           <div className="grid grid-cols-2 gap-4 h-[18rem]">
             <PreviewData />
-            <div className="col-span-1 w-full h-full"></div>
+            <ButtonPanel/>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Players squads={squads} matchId={matchId} />
