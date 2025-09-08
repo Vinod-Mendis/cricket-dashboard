@@ -1,21 +1,52 @@
 /** @format */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+
+type SectionType =
+  | "wicket"
+  | "pen"
+  | "runs"
+  | "wides"
+  | "byes"
+  | "leg_byes"
+  | "no_ball_b"
+  | "no_ball_lb"
+  | "no_ball_runs";
 
 export default function Scoring() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [customValue, setCustomValue] = useState("");
   const [dialogContext, setDialogContext] = useState({ section: "", type: "" });
+  const [selectedButtons, setSelectedButtons] = useState<
+    Record<SectionType, string | number | null>
+  >({
+    wicket: null,
+    pen: null,
+    runs: null,
+    wides: null,
+    byes: null,
+    leg_byes: null,
+    no_ball_b: null,
+    no_ball_lb: null,
+    no_ball_runs: null,
+  });
+
+  useEffect(() => {
+    console.log("customValue changed:", customValue);
+  }, [customValue]);
+
+  useEffect(() => {
+    console.log("dialogContext changed:", dialogContext);
+  }, [dialogContext]);
+
+  useEffect(() => {
+    console.log("selectedButtons changed:", selectedButtons);
+  }, [selectedButtons]);
 
   const handleQuestionMarkClick = (section: string, type: string) => {
     setDialogContext({ section, type });
@@ -23,11 +54,22 @@ export default function Scoring() {
     setIsDialogOpen(true);
   };
 
+  const handleButtonClick = (section: SectionType, value: string | number) => {
+    setSelectedButtons((prev) => ({
+      ...prev,
+      [section]: prev[section] === value ? null : value,
+    }));
+  };
+
   const handleSubmitCustomValue = () => {
     if (customValue.trim()) {
-      // Here you can handle the custom value submission
-      console.log(`Custom value for ${dialogContext.section}: ${customValue}`);
-      // Add your logic here to process the custom value
+      const sectionKey = dialogContext.type as SectionType;
+      const numericValue = Number(customValue);
+      setSelectedButtons((prev) => ({
+        ...prev,
+        [sectionKey]: numericValue,
+      }));
+      console.log(`Custom value for ${dialogContext.section}: ${numericValue}`);
       setIsDialogOpen(false);
       setCustomValue("");
     }
@@ -37,6 +79,13 @@ export default function Scoring() {
     if (e.key === "Enter") {
       handleSubmitCustomValue();
     }
+  };
+
+  const isButtonSelected = (
+    section: SectionType,
+    value: string | number
+  ): boolean => {
+    return selectedButtons[section] === value;
   };
 
   return (
@@ -49,8 +98,22 @@ export default function Scoring() {
         <CardContent className="grid grid-cols-8 gap-1">
           {/* Wicket + Pen column */}
           <div className="grid grid-rows-2 gap-1">
-            <Button className="h-full bg-red-500 text-white">Wicket</Button>
-            <Button className="h-full bg-teal-500 text-white">Pen</Button>
+            <Button
+              className={`h-full text-white ${
+                isButtonSelected("wicket", "wicket")
+                  ? "bg-red-700"
+                  : "bg-red-500"
+              }`}
+              onClick={() => handleButtonClick("wicket", "wicket")}>
+              Wicket
+            </Button>
+            <Button
+              className={`h-full text-white ${
+                isButtonSelected("pen", "pen") ? "bg-teal-700" : "bg-teal-500"
+              }`}
+              onClick={() => handleButtonClick("pen", "pen")}>
+              Pen
+            </Button>
           </div>
 
           {/* Runs */}
@@ -62,10 +125,22 @@ export default function Scoring() {
               {[0, 1, 2, 3, 4, 6, 5, "?"].map((val) => (
                 <Button
                   key={val}
-                  variant="outline"
-                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}
+                  variant={
+                    val === "?"
+                      ? "outline"
+                      : isButtonSelected("runs", val)
+                      ? "default"
+                      : "outline"
+                  }
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""} ${
+                    val !== "?" && isButtonSelected("runs", val)
+                      ? "bg-blue-600 text-white"
+                      : ""
+                  }`}
                   onClick={() =>
-                    val === "?" ? handleQuestionMarkClick("Runs", "runs") : null
+                    val === "?"
+                      ? handleQuestionMarkClick("Runs", "runs")
+                      : handleButtonClick("runs", val)
                   }>
                   {val}
                 </Button>
@@ -79,15 +154,25 @@ export default function Scoring() {
               Wides
             </div>
             <div className="grid grid-cols-2 gap-1 mt-2">
-              {["w", "+1", "+2", "+3", "+4", "?"].map((val) => (
+              {["w", 1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
-                  variant="outline"
-                  className="h-10"
+                  variant={
+                    val === "?"
+                      ? "outline"
+                      : isButtonSelected("wides", val)
+                      ? "default"
+                      : "outline"
+                  }
+                  className={`h-10 ${
+                    val !== "?" && isButtonSelected("wides", val)
+                      ? "bg-blue-600 text-white"
+                      : ""
+                  }`}
                   onClick={() =>
                     val === "?"
                       ? handleQuestionMarkClick("Wides", "wides")
-                      : null
+                      : handleButtonClick("wides", val)
                   }>
                   {val}
                 </Button>
@@ -104,8 +189,23 @@ export default function Scoring() {
               {[1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
-                  variant="outline"
-                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}>
+                  variant={
+                    val === "?"
+                      ? "outline"
+                      : isButtonSelected("byes", val)
+                      ? "default"
+                      : "outline"
+                  }
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""} ${
+                    val !== "?" && isButtonSelected("byes", val)
+                      ? "bg-blue-600 text-white"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    val === "?"
+                      ? handleQuestionMarkClick("Byes", "byes")
+                      : handleButtonClick("byes", val)
+                  }>
                   {val}
                 </Button>
               ))}
@@ -121,8 +221,23 @@ export default function Scoring() {
               {[1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
-                  variant="outline"
-                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}>
+                  variant={
+                    val === "?"
+                      ? "outline"
+                      : isButtonSelected("leg_byes", val)
+                      ? "default"
+                      : "outline"
+                  }
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""} ${
+                    val !== "?" && isButtonSelected("leg_byes", val)
+                      ? "bg-blue-600 text-white"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    val === "?"
+                      ? handleQuestionMarkClick("Leg Byes", "leg_byes")
+                      : handleButtonClick("leg_byes", val)
+                  }>
                   {val}
                 </Button>
               ))}
@@ -138,12 +253,22 @@ export default function Scoring() {
               {[1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
-                  variant="outline"
-                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}
+                  variant={
+                    val === "?"
+                      ? "outline"
+                      : isButtonSelected("no_ball_b", val)
+                      ? "default"
+                      : "outline"
+                  }
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""} ${
+                    val !== "?" && isButtonSelected("no_ball_b", val)
+                      ? "bg-blue-600 text-white"
+                      : ""
+                  }`}
                   onClick={() =>
                     val === "?"
-                      ? handleQuestionMarkClick("No Ball (b)", "no-ball-b")
-                      : null
+                      ? handleQuestionMarkClick("No Ball (b)", "no_ball_b")
+                      : handleButtonClick("no_ball_b", val)
                   }>
                   {val}
                 </Button>
@@ -160,12 +285,22 @@ export default function Scoring() {
               {[1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
-                  variant="outline"
-                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}
+                  variant={
+                    val === "?"
+                      ? "outline"
+                      : isButtonSelected("no_ball_lb", val)
+                      ? "default"
+                      : "outline"
+                  }
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""} ${
+                    val !== "?" && isButtonSelected("no_ball_lb", val)
+                      ? "bg-blue-600 text-white"
+                      : ""
+                  }`}
                   onClick={() =>
                     val === "?"
-                      ? handleQuestionMarkClick("No Ball (lb)", "no-ball-lb")
-                      : null
+                      ? handleQuestionMarkClick("No Ball (lb)", "no_ball_lb")
+                      : handleButtonClick("no_ball_lb", val)
                   }>
                   {val}
                 </Button>
@@ -182,15 +317,25 @@ export default function Scoring() {
               {[0, 1, 2, 3, 4, 6, "?"].map((val) => (
                 <Button
                   key={val}
-                  variant="outline"
-                  className={`h-10 ${val === "?" ? "col-span-3" : ""}`}
+                  variant={
+                    val === "?"
+                      ? "outline"
+                      : isButtonSelected("no_ball_runs", val)
+                      ? "default"
+                      : "outline"
+                  }
+                  className={`h-10 ${val === "?" ? "col-span-3" : ""} ${
+                    val !== "?" && isButtonSelected("no_ball_runs", val)
+                      ? "bg-blue-600 text-white"
+                      : ""
+                  }`}
                   onClick={() =>
                     val === "?"
                       ? handleQuestionMarkClick(
                           "No Ball (Runs)",
-                          "no-ball-runs"
+                          "no_ball_runs"
                         )
-                      : null
+                      : handleButtonClick("no_ball_runs", val)
                   }>
                   {val}
                 </Button>
