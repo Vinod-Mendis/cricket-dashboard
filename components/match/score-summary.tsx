@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import EditScoreDialog from "../modals/edit-score-dialog";
 
 interface scoreSummaryTypes {
   matchId: string;
@@ -126,119 +127,138 @@ export default function ScoreSummary({ matchId }: scoreSummaryTypes) {
     }
   };
 
+  // Handle score summary updates from EditScoreDialog
+  const handleScoreUpdate = (updatedData: {
+    rightSideData: typeof rightSideData;
+    leftSideData: typeof leftSideData;
+  }) => {
+    setRightSideData(updatedData.rightSideData);
+    setLeftSideData(updatedData.leftSideData);
+  };
+
   return (
     <>
       <Card className="col-span-4">
         <CardHeader className="flex justify-between">
           <CardTitle>Score Summary</CardTitle>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                Create Inning <Plus className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Create New Innings</DialogTitle>
-                <DialogDescription>
-                  Enter the details for the new innings. All fields are
-                  required.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="innings_number">Innings Number</Label>
-                    <Select
-                      value={formData.innings_number.toString()}
-                      onValueChange={(value) =>
-                        handleInputChange("innings_number", parseInt(value))
-                      }>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select innings" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1st Innings</SelectItem>
-                        <SelectItem value="2">2nd Innings</SelectItem>
-                      </SelectContent>
-                    </Select>
+          <div className="flex gap-2">
+            {/* Edit Score Button */}
+            <EditScoreDialog
+              rightSideData={rightSideData}
+              leftSideData={leftSideData}
+              onSave={handleScoreUpdate}
+            />
+
+            {/* Create Innings Button */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  Create Inning <Plus className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Innings</DialogTitle>
+                  <DialogDescription>
+                    Enter the details for the new innings. All fields are
+                    required.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="innings_number">Innings Number</Label>
+                      <Select
+                        value={formData.innings_number.toString()}
+                        onValueChange={(value) =>
+                          handleInputChange("innings_number", parseInt(value))
+                        }>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select innings" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1st Innings</SelectItem>
+                          <SelectItem value="2">2nd Innings</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="scheduled_overs">Scheduled Overs</Label>
+                      <Input
+                        id="scheduled_overs"
+                        type="number"
+                        min="1"
+                        max="50"
+                        value={formData.scheduled_overs}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "scheduled_overs",
+                            parseInt(e.target.value)
+                          )
+                        }
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="scheduled_overs">Scheduled Overs</Label>
+                    <Label htmlFor="batting_team_id">Batting Team ID</Label>
                     <Input
-                      id="scheduled_overs"
-                      type="number"
-                      min="1"
-                      max="50"
-                      value={formData.scheduled_overs}
+                      id="batting_team_id"
+                      placeholder="e.g., TEAM-IND"
+                      value={formData.batting_team_id}
                       onChange={(e) =>
-                        handleInputChange(
-                          "scheduled_overs",
-                          parseInt(e.target.value)
-                        )
+                        handleInputChange("batting_team_id", e.target.value)
                       }
                       required
                     />
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="batting_team_id">Batting Team ID</Label>
-                  <Input
-                    id="batting_team_id"
-                    placeholder="e.g., TEAM-IND"
-                    value={formData.batting_team_id}
-                    onChange={(e) =>
-                      handleInputChange("batting_team_id", e.target.value)
-                    }
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bowling_team_id">Bowling Team ID</Label>
+                    <Input
+                      id="bowling_team_id"
+                      placeholder="e.g., TEAM-AUS"
+                      value={formData.bowling_team_id}
+                      onChange={(e) =>
+                        handleInputChange("bowling_team_id", e.target.value)
+                      }
+                      required
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bowling_team_id">Bowling Team ID</Label>
-                  <Input
-                    id="bowling_team_id"
-                    placeholder="e.g., TEAM-AUS"
-                    value={formData.bowling_team_id}
-                    onChange={(e) =>
-                      handleInputChange("bowling_team_id", e.target.value)
-                    }
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="target">Target (0 for 1st innings)</Label>
+                    <Input
+                      id="target"
+                      type="number"
+                      min="0"
+                      value={formData.target}
+                      onChange={(e) =>
+                        handleInputChange("target", parseInt(e.target.value))
+                      }
+                      required
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="target">Target (0 for 1st innings)</Label>
-                  <Input
-                    id="target"
-                    type="number"
-                    min="0"
-                    value={formData.target}
-                    onChange={(e) =>
-                      handleInputChange("target", parseInt(e.target.value))
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                    disabled={isLoading}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Creating..." : "Create Innings"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsDialogOpen(false)}
+                      disabled={isLoading}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading ? "Creating..." : "Create Innings"}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent className="flex justify-between">
           {/* left side */}

@@ -170,7 +170,7 @@ export function EditPlayerDialog({
     setEditingPlayer(null);
   };
 
-  const updateField = (field: keyof Player, value: any) => {
+  const updateField = <K extends keyof Player>(field: K, value: Player[K]) => {
     if (!editingPlayer) return;
     setEditingPlayer({
       ...editingPlayer,

@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../ui/dialog";
 import {
   Select,
@@ -54,7 +53,7 @@ interface PlayerRowProps {
   teamId: number;
   team: Team;
 }
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export default function Players({ squads, matchId, onRefresh }: any) {
   // State to track loading states for API calls
   const [loadingPlayers, setLoadingPlayers] = useState<{

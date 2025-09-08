@@ -56,17 +56,17 @@ interface Match {
   venue_city?: string;
 }
 
-interface Team {
-  team_id: string;
-  full_name: string;
-  short_name: string;
-  colors: {
-    primary: string;
-    secondary: string;
-    extra: string;
-  };
-  logo: string;
-}
+// interface Team {
+//   team_id: string;
+//   full_name: string;
+//   short_name: string;
+//   colors: {
+//     primary: string;
+//     secondary: string;
+//     extra: string;
+//   };
+//   logo: string;
+// }
 
 // interface Player {
 //   player_id: string
@@ -228,11 +228,11 @@ function MatchCard({
               </span>
             </div>
           )}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>
               🌤️ {match.weather_condition}, {match.temperature}°C
             </span>
-          </div>
+          </div> */}
           {match.winning_team_name && (
             <div className="flex items-center gap-2 text-sm">
               <Trophy className="h-4 w-4 text-primary" />
@@ -247,7 +247,7 @@ function MatchCard({
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
+  // const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("T20");
@@ -286,24 +286,24 @@ export default function MatchesPage() {
     }
   };
 
-  const fetchTeams = async () => {
-    try {
-      const response = await fetch(
-        "https://cricket-score-board-v4g9.onrender.com/api/teams"
-      );
-      const data = await response.json();
-      if (data.success) {
-        setTeams(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching teams:", error);
-    }
-  };
+  // const fetchTeams = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://cricket-score-board-v4g9.onrender.com/api/teams"
+  //     );
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       setTeams(data.data);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching teams:", error);
+  //   }
+  // };
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchMatches(), fetchTeams()]);
+      await Promise.all([fetchMatches()]);
       setLoading(false);
     };
     loadData();

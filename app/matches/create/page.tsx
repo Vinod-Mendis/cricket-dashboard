@@ -16,7 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Users, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, Users, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -47,19 +47,19 @@ interface Official {
   type: string;
 }
 
-interface Weather {
-  id: string;
-  location: string;
-  condition: string;
-  temperature: number;
-}
+// interface Weather {
+//   id: string;
+//   location: string;
+//   condition: string;
+//   temperature: number;
+// }
 
 export default function CreateMatchPage() {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
   // const [players, setPlayers] = useState<Player[]>([]);
   const [officials, setOfficials] = useState<Official[]>([]);
-  const [weather, setWeather] = useState<Weather[]>([]);
+  // const [weather, setWeather] = useState<Weather[]>([]);
   const [teamAPlayers, setTeamAPlayers] = useState<Player[]>([]);
   const [teamBPlayers, setTeamBPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
@@ -275,6 +275,15 @@ export default function CreateMatchPage() {
     isPlaying: boolean
   ) => {
     if (teamType === "A") {
+      const selectedPlayersCount = formData.team_a_players.filter(
+        (p) => p.is_playing
+      ).length;
+
+      if (isPlaying && selectedPlayersCount >= 11) {
+        toast.error("You can only select 11 players for Team A");
+        return;
+      }
+
       setFormData((prev) => ({
         ...prev,
         team_a_players: prev.team_a_players.map((player) =>
@@ -284,6 +293,15 @@ export default function CreateMatchPage() {
         ),
       }));
     } else {
+      const selectedPlayersCount = formData.team_b_players.filter(
+        (p) => p.is_playing
+      ).length;
+
+      if (isPlaying && selectedPlayersCount >= 11) {
+        toast.error("You can only select 11 players for Team B");
+        return;
+      }
+
       setFormData((prev) => ({
         ...prev,
         team_b_players: prev.team_b_players.map((player) =>
@@ -678,8 +696,16 @@ export default function CreateMatchPage() {
                             id={`team_a_${player.id}`}
                             checked={
                               formData.team_a_players.find(
-                                (p) => p.player_id === player.id // This is correct
+                                (p) => p.player_id === player.id
                               )?.is_playing || false
+                            }
+                            disabled={
+                              !formData.team_a_players.find(
+                                (p) => p.player_id === player.id
+                              )?.is_playing &&
+                              formData.team_a_players.filter(
+                                (p) => p.is_playing
+                              ).length >= 11
                             }
                             onCheckedChange={(checked) =>
                               handlePlayerSelection(
@@ -689,6 +715,7 @@ export default function CreateMatchPage() {
                               )
                             }
                           />
+
                           <Label
                             htmlFor={`team_a_${player.id}`}
                             className="text-sm">
@@ -815,8 +842,16 @@ export default function CreateMatchPage() {
                             id={`team_b_${player.id}`}
                             checked={
                               formData.team_b_players.find(
-                                (p) => p.player_id === player.id // This is correct
+                                (p) => p.player_id === player.id
                               )?.is_playing || false
+                            }
+                            disabled={
+                              !formData.team_b_players.find(
+                                (p) => p.player_id === player.id
+                              )?.is_playing &&
+                              formData.team_b_players.filter(
+                                (p) => p.is_playing
+                              ).length >= 11
                             }
                             onCheckedChange={(checked) =>
                               handlePlayerSelection(
@@ -826,6 +861,7 @@ export default function CreateMatchPage() {
                               )
                             }
                           />
+
                           <Label
                             htmlFor={`team_b_${player.id}`}
                             className="text-sm">

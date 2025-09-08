@@ -7,14 +7,9 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
-  MapPin,
   Trophy,
-  Users,
-  CloudSun,
-  Thermometer,
 } from "lucide-react";
 import { toast } from "sonner";
 import ScoreSummary from "@/components/match/score-summary";
@@ -116,24 +111,26 @@ export default function MatchDetailsPage() {
   const [squads, setSquads] = useState<{ [key: string]: Squad }>({});
   const [innings, setInnings] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  console.log("Squads :", squads);
+  
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
       try {
-        const [matchResponse, squadResponse, inningsResponse] =
-          await Promise.all([
-            fetch(
-              `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`
-            ),
-            fetch(
-              `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}/squads`
-            ),
-            fetch(
-              `https://cricket-score-board-v4g9.onrender.com/api/innings/match/${matchId}`
-            ),
-          ]);
+        const [
+          matchResponse,
+          squadResponse,
+          inningsResponse,
+        ] = await Promise.all([
+          fetch(
+            `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`
+          ),
+          fetch(
+            `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}/squads`
+          ),
+          fetch(
+            `https://cricket-score-board-v4g9.onrender.com/api/innings/match/${matchId}`
+          ),
+        ]);
 
         const matchData = await matchResponse.json();
         const squadData = await squadResponse.json();
@@ -150,6 +147,8 @@ export default function MatchDetailsPage() {
         if (inningsData.success) {
           // You'll need to add this state variable
           setInnings(inningsData.data); // or however the response is structured
+          console.log(innings);
+          
         }
       } catch (error) {
         console.error("Error fetching match details:", error);
@@ -216,58 +215,60 @@ export default function MatchDetailsPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <div className="flex justify-between">
-          <div className="flex gap-4 items-center">
-            <Button
-              variant="outline"
-              onClick={() => router.push("/matches")}
-              className="">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Matches
-            </Button>
-            <div className="flex gap-4 items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-balance">
-                  {matchDetails.title}
-                </h1>
-                <p className="text-muted-foreground">
-                  Match ID: {matchDetails.match_id}
-                </p>
+    <>
+      <div className="p-6">
+        <div className="mb-6">
+          <div className="flex justify-between">
+            <div className="flex gap-4 items-center">
+              <Button
+                variant="outline"
+                onClick={() => router.push("/matches")}
+                className="">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Matches
+              </Button>
+              <div className="flex gap-4 items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-balance">
+                    {matchDetails.title}
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Match ID: {matchDetails.match_id}
+                  </p>
+                </div>
+                <Badge
+                  className={`${getStatusColor(
+                    matchDetails.status
+                  )} text-white capitalize`}>
+                  {matchDetails.status.toLowerCase()}
+                </Badge>
               </div>
-              <Badge
-                className={`${getStatusColor(
-                  matchDetails.status
-                )} text-white capitalize`}>
-                {matchDetails.status.toLowerCase()}
-              </Badge>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex flex-col gap-4 ">
-        <div className="grid grid-cols-5 gap-4">
-          <div className="col-span-4 flex flex-col gap-4">
-            <ScoreSummary matchId={matchId} />
-            <PlayControl />
-            <Scoring />
+        <div className="flex flex-col gap-4 ">
+          <div className="grid grid-cols-5 gap-4">
+            <div className="col-span-4 flex flex-col gap-4">
+              <ScoreSummary matchId={matchId} />
+              <PlayControl />
+              <Scoring />
+            </div>
+            <ScreenButtons />
           </div>
-          <ScreenButtons />
-        </div>
-        <div className="grid grid-cols-7 gap-4 h-[18rem]">
-          <PreviewData />
-          <BallByBall inningId={5} />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <Players squads={squads} matchId={matchId} />
-        </div>
+          <div className="grid grid-cols-7 gap-4 h-[18rem]">
+            <div className="col-span-3 flex flex-col gap-4">
+              <PreviewData />
+              <Players squads={squads} matchId={matchId} />
+            </div>
+            <BallByBall inningId={5} />
+          </div>
+          <div className="grid grid-cols-2 gap-4"></div>
 
-        {/* Match Overview */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Teams */}
-          {/* <Card>
+          {/* Match Overview */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Teams */}
+            {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
@@ -319,38 +320,38 @@ export default function MatchDetailsPage() {
             </CardContent>
           </Card> */}
 
-          {/* Toss Information */}
-          {matchDetails.toss && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Toss
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-lg">
-                  <span className="font-semibold">
-                    {matchDetails.toss.winner_team_id ===
-                    matchDetails.team_a.team_id
-                      ? matchDetails.team_a.short_name
-                      : matchDetails.team_b.short_name}
-                  </span>{" "}
-                  won the toss and chose to{" "}
-                  <span className="font-semibold">
-                    {matchDetails.toss.decision.toLowerCase()}
-                  </span>{" "}
-                  first
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+            {/* Toss Information */}
+            {matchDetails.toss && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5" />
+                    Toss
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-lg">
+                    <span className="font-semibold">
+                      {matchDetails.toss.winner_team_id ===
+                      matchDetails.team_a.team_id
+                        ? matchDetails.team_a.short_name
+                        : matchDetails.team_b.short_name}
+                    </span>{" "}
+                    won the toss and chose to{" "}
+                    <span className="font-semibold">
+                      {matchDetails.toss.decision.toLowerCase()}
+                    </span>{" "}
+                    first
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
-        {/* Match Info Sidebar */}
-        <div className="space-y-6">
-          {/* Venue & Weather */}
-          <Card>
+          {/* Match Info Sidebar */}
+          <div className="space-y-6">
+            {/* Venue & Weather */}
+            {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
@@ -362,7 +363,7 @@ export default function MatchDetailsPage() {
                 <div className="font-semibold">{matchDetails.venue}</div>
               </div>
 
-              {/* <div className="pt-2 border-t">
+              <div className="pt-2 border-t">
                 <div className="flex items-center gap-2 mb-2">
                   <CloudSun className="h-4 w-4" />
                   <span className="font-medium">
@@ -379,12 +380,12 @@ export default function MatchDetailsPage() {
                 <div className="text-sm text-muted-foreground">
                   Wind: {matchDetails.weather.wind_speed} km/h
                 </div>
-              </div> */}
+              </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
-          {/* Officials */}
-          <Card>
+            {/* Officials */}
+            {/* <Card>
             <CardHeader>
               <CardTitle>Match Officials</CardTitle>
             </CardHeader>
@@ -414,12 +415,12 @@ export default function MatchDetailsPage() {
                 </span>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
+          </div>
         </div>
-      </div>
 
-      {/* Team Squads */}
-      {/* <div className="mt-8">
+        {/* Team Squads */}
+        {/* <div className="mt-8">
         <Tabs defaultValue={Object.keys(squads)[0]} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
             {Object.values(squads).map((squad) => (
@@ -509,6 +510,7 @@ export default function MatchDetailsPage() {
           ))}
         </Tabs>
       </div> */}
-    </div>
+      </div>
+    </>
   );
 }

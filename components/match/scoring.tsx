@@ -1,10 +1,44 @@
 /** @format */
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 export default function Scoring() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [customValue, setCustomValue] = useState("");
+  const [dialogContext, setDialogContext] = useState({ section: "", type: "" });
+
+  const handleQuestionMarkClick = (section: string, type: string) => {
+    setDialogContext({ section, type });
+    setCustomValue("");
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmitCustomValue = () => {
+    if (customValue.trim()) {
+      // Here you can handle the custom value submission
+      console.log(`Custom value for ${dialogContext.section}: ${customValue}`);
+      // Add your logic here to process the custom value
+      setIsDialogOpen(false);
+      setCustomValue("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSubmitCustomValue();
+    }
+  };
+
   return (
     <>
       <Card>
@@ -24,9 +58,15 @@ export default function Scoring() {
             <div className="text-center font-semibold bg-blue-900 text-white">
               Runs
             </div>
-            <div className="grid grid-cols-4 gap-1 mt-2">
-              {[0, 1, 2, 3, 4, 6 ,5, '?'].map((val) => (
-                <Button key={val} variant="outline" className="h-10">
+            <div className="grid grid-cols-3 gap-1 mt-2">
+              {[0, 1, 2, 3, 4, 6, 5, "?"].map((val) => (
+                <Button
+                  key={val}
+                  variant="outline"
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}
+                  onClick={() =>
+                    val === "?" ? handleQuestionMarkClick("Runs", "runs") : null
+                  }>
                   {val}
                 </Button>
               ))}
@@ -38,9 +78,17 @@ export default function Scoring() {
             <div className="text-center font-semibold bg-blue-900 text-white">
               Wides
             </div>
-            <div className="grid grid-cols-3 gap-1 mt-2">
+            <div className="grid grid-cols-2 gap-1 mt-2">
               {["w", "+1", "+2", "+3", "+4", "?"].map((val) => (
-                <Button key={val} variant="outline" className="h-10">
+                <Button
+                  key={val}
+                  variant="outline"
+                  className="h-10"
+                  onClick={() =>
+                    val === "?"
+                      ? handleQuestionMarkClick("Wides", "wides")
+                      : null
+                  }>
                   {val}
                 </Button>
               ))}
@@ -53,8 +101,11 @@ export default function Scoring() {
               Byes
             </div>
             <div className="grid grid-cols-2 gap-1 mt-2">
-              {[1, 2, 3, 4].map((val) => (
-                <Button key={val} variant="outline" className="h-10">
+              {[1, 2, 3, 4, "?"].map((val) => (
+                <Button
+                  key={val}
+                  variant="outline"
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}>
                   {val}
                 </Button>
               ))}
@@ -67,8 +118,11 @@ export default function Scoring() {
               Leg Byes
             </div>
             <div className="grid grid-cols-2 gap-1 mt-2">
-              {[1, 2, 3, 4].map((val) => (
-                <Button key={val} variant="outline" className="h-10">
+              {[1, 2, 3, 4, "?"].map((val) => (
+                <Button
+                  key={val}
+                  variant="outline"
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}>
                   {val}
                 </Button>
               ))}
@@ -82,7 +136,15 @@ export default function Scoring() {
             </div>
             <div className="grid grid-cols-2 gap-1 mt-2">
               {[1, 2, 3, 4, "?"].map((val) => (
-                <Button key={val} variant="outline" className="h-10">
+                <Button
+                  key={val}
+                  variant="outline"
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}
+                  onClick={() =>
+                    val === "?"
+                      ? handleQuestionMarkClick("No Ball (b)", "no-ball-b")
+                      : null
+                  }>
                   {val}
                 </Button>
               ))}
@@ -95,8 +157,16 @@ export default function Scoring() {
               No Ball (lb)
             </div>
             <div className="grid grid-cols-2 gap-1 mt-2">
-              {[1, 2, 3, 4].map((val) => (
-                <Button key={val} variant="outline" className="h-10">
+              {[1, 2, 3, 4, "?"].map((val) => (
+                <Button
+                  key={val}
+                  variant="outline"
+                  className={`h-10 ${val === "?" ? "col-span-2" : ""}`}
+                  onClick={() =>
+                    val === "?"
+                      ? handleQuestionMarkClick("No Ball (lb)", "no-ball-lb")
+                      : null
+                  }>
                   {val}
                 </Button>
               ))}
@@ -109,8 +179,19 @@ export default function Scoring() {
               No Ball (Runs)
             </div>
             <div className="grid grid-cols-3 gap-1 mt-2">
-              {[0, 1, 2, 3, 4, 6].map((val) => (
-                <Button key={val} variant="outline" className="h-10">
+              {[0, 1, 2, 3, 4, 6, "?"].map((val) => (
+                <Button
+                  key={val}
+                  variant="outline"
+                  className={`h-10 ${val === "?" ? "col-span-3" : ""}`}
+                  onClick={() =>
+                    val === "?"
+                      ? handleQuestionMarkClick(
+                          "No Ball (Runs)",
+                          "no-ball-runs"
+                        )
+                      : null
+                  }>
                   {val}
                 </Button>
               ))}
@@ -118,6 +199,44 @@ export default function Scoring() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Custom Value Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-md w-full">
+          <DialogHeader>
+            <DialogTitle>
+              Enter Custom Value for {dialogContext.section}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="custom-value" className="text-right">
+                Value
+              </Label>
+              <Input
+                id="custom-value"
+                type="number"
+                value={customValue}
+                onChange={(e) => setCustomValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="col-span-3"
+                placeholder="Enter custom value"
+                autoFocus
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitCustomValue}
+              disabled={!customValue.trim()}>
+              Submit
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
