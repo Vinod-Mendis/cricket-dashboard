@@ -5,7 +5,6 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useCricket } from "@/components/cricket-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,14 +16,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -37,10 +28,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   ArrowLeft,
   Users,
-  Plus,
   UserPlus,
   Edit,
-  Trash2,
   Search,
   UserMinus,
 } from "lucide-react";

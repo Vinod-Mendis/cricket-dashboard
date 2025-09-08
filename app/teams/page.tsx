@@ -371,13 +371,17 @@ function TeamCard({ team, onUpdate }: { team: Team; onUpdate: () => void }) {
   const [deleting, setDeleting] = useState(false);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent navigation when clicking on action buttons
-    if ((e.target as HTMLElement).closest("button")) {
+    // Prevent navigation when clicking on action buttons or their children
+    const target = e.target as HTMLElement;
+    if (
+      target.closest("button") ||
+      target.closest("[role='dialog']") ||
+      target.closest(".dialog-content")
+    ) {
       return;
     }
     router.push(`/teams/${team.id}`);
   };
-
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm(`Are you sure you want to delete ${team.team_name}?`)) {

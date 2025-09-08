@@ -23,15 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { User, Search, Trash2, Edit, Plus } from "lucide-react";
+import { User, Search, Trash2, Edit } from "lucide-react";
 import { CreatePlayerDialog } from "@/components/modals/create-player-dialog";
 import { EditPlayerDialog } from "@/components/modals/edit-player-dialog";
 
@@ -89,19 +81,19 @@ export default function PlayersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
-  const [newPlayer, setNewPlayer] = useState({
-    name: "",
-    short_name: "",
-    role: "",
-    batting_style: "",
-    bowling_style: "",
-    age: "",
-    image: "",
-    shirt_number: "",
-    team_id: "",
-    last_match_date: "",
-    career_span: "",
-  });
+  // const [newPlayer, setNewPlayer] = useState({
+  //   name: "",
+  //   short_name: "",
+  //   role: "",
+  //   batting_style: "",
+  //   bowling_style: "",
+  //   age: "",
+  //   image: "",
+  //   shirt_number: "",
+  //   team_id: "",
+  //   last_match_date: "",
+  //   career_span: "",
+  // });
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
