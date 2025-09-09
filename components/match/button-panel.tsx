@@ -2,8 +2,6 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
-import { Coins } from "lucide-react";
 import TossDialog from "../modals/toss-dialog";
 
 export default function ButtonPanel() {

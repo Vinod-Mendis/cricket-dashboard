@@ -41,7 +41,7 @@ interface ScoreSummaryResponse {
 }
 
 export default function ScoreSummary() {
-  const { matchDetails, toss, innings } = useMatch();
+  const { toss } = useMatch();
   const [scoreSummary, setScoreSummary] = useState<
     ScoreSummaryResponse["data"] | null
   >(null);

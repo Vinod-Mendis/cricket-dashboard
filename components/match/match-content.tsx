@@ -21,9 +21,7 @@ export default function MatchContent() {
     matchDetails,
     squads,
     matchId,
-    innings,
     loading,
-    error,
     refreshMatchData,
   } = useMatch();
   const router = useRouter();

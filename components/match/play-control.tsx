@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
-import { Edit, Replace } from "lucide-react";
+import { Edit } from "lucide-react";
 import PlayControlEdit from "../modals/play-control-dialog";
 
 export default function PlayControl() {

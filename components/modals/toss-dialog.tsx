@@ -52,14 +52,10 @@ interface TossResponse {
 }
 
 export default function TossDialog() {
-  const { matchDetails,matchId, refreshMatchData, setToss, toss } = useMatch();
+  const { matchDetails, matchId, refreshMatchData, setToss, toss } = useMatch();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  const [teams, setTeams] = useState<{
-    team_a: TeamData;
-    team_b: TeamData;
-  } | null>(null);
   const [currentToss, setCurrentToss] = useState<
     TossResponse["data"]["toss"] | null
   >(null);
@@ -85,7 +81,6 @@ export default function TossDialog() {
       const result: TossResponse = await response.json();
 
       if (result.success) {
-        setTeams(result.data.teams);
         setCurrentToss(result.data.toss);
         setToss(result.data.toss);
 
@@ -181,6 +176,10 @@ export default function TossDialog() {
       });
     }
   }, [toss]);
+
+  useEffect(() => {
+    fetchTossData();
+  }, []);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>

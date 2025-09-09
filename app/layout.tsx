@@ -8,7 +8,6 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { CricketSidebar } from "@/components/cricket-sidebar";
 import { Suspense } from "react";
-import { MatchProvider } from "@/context/match-context";
 
 export const metadata: Metadata = {
   title: "Cricket Match Dashboard",
@@ -24,14 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <MatchProvider>
-          <div className="flex h-screen">
-            <Suspense fallback={<div>Loading...</div>}>
-              <CricketSidebar />
-              <main className="flex-1 overflow-auto">{children}</main>
-            </Suspense>
-          </div>
-        </MatchProvider>
+        <div className="flex h-screen">
+          <Suspense fallback={<div>Loading...</div>}>
+            <CricketSidebar />
+            <main className="flex-1 overflow-auto">{children}</main>
+          </Suspense>
+        </div>
         <Analytics />
       </body>
     </html>
