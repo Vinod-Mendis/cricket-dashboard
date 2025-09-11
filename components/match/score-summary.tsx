@@ -8,7 +8,18 @@ import { useMatch } from "@/context/match-context";
 import { Badge } from "../ui/badge";
 import { ArrowRight } from "lucide-react";
 
-interface ScoreSummary {
+interface Teams {
+  batting_team: string;
+  bowling_team: string;
+}
+
+interface Inning {
+  id: number;
+  number: number;
+  status: string;
+}
+
+interface Summary {
   current_score: string;
   last_wicket: string;
   last_5_overs: string;
@@ -20,9 +31,21 @@ interface ScoreSummary {
   overs_rem: string;
 }
 
+interface ScoreSummaryResponse {
+  success: boolean;
+  data: {
+    teams: Teams;
+    innings: Inning;
+    summary: Summary;
+  };
+}
+
 export default function ScoreSummary() {
   const { matchDetails, toss, innings } = useMatch();
-  const [scoreSummary, setScoreSummary] = useState<ScoreSummary | null>(null);
+  const [scoreSummary, setScoreSummary] = useState<
+    ScoreSummaryResponse["data"] | null
+  >(null);
+
   const [loading, setLoading] = useState(false);
 
   // Fetch score summary
@@ -39,8 +62,8 @@ export default function ScoreSummary() {
 
       const result = await response.json();
 
-      if (result.success && result.data.summary) {
-        setScoreSummary(result.data.summary);
+      if (result.success && result.data) {
+        setScoreSummary(result.data);
       }
     } catch (error) {
       console.error("Error fetching score summary:", error);
@@ -71,38 +94,38 @@ export default function ScoreSummary() {
   // Create data objects from scoreSummary
   const rightSideData = {
     lastWicket: {
-      value: scoreSummary?.last_wicket || "N/A",
+      value: scoreSummary?.summary?.last_wicket || "N/A",
       label: "Last Wicket",
     },
     last5Overs: {
-      value: scoreSummary?.last_5_overs || "N/A",
+      value: scoreSummary?.summary?.last_5_overs || "N/A",
       label: "Last 5 Overs",
     },
     dls: {
-      value: scoreSummary?.dls || "N/A",
+      value: scoreSummary?.summary?.dls || "N/A",
       label: "DLS",
     },
     runRate: {
-      value: scoreSummary?.run_rate || "N/A",
+      value: scoreSummary?.summary?.run_rate || "N/A",
       label: "Run Rate",
     },
   };
 
   const leftSideData = {
     drs: {
-      value: scoreSummary?.drs || "N/A",
+      value: scoreSummary?.summary?.drs || "N/A",
       label: "DRS",
     },
     overRate: {
-      value: scoreSummary?.over_rate || "N/A",
+      value: scoreSummary?.summary?.over_rate || "N/A",
       label: "Over Rate",
     },
     cutOff: {
-      value: scoreSummary?.cut_off || "N/A",
+      value: scoreSummary?.summary?.cut_off || "N/A",
       label: "Cut-Off",
     },
     oversRem: {
-      value: scoreSummary?.overs_rem || "N/A",
+      value: scoreSummary?.summary?.overs_rem || "N/A",
       label: "Overs Rem",
     },
   };
@@ -125,16 +148,24 @@ export default function ScoreSummary() {
     return { runs: 0, wickets: 0, overs: "0.0" };
   };
 
-  const currentScore = parseCurrentScore(scoreSummary?.current_score || "");
+  const currentScore = parseCurrentScore(
+    scoreSummary?.summary?.current_score || ""
+  );
+
+  console.log("Score Summary:", scoreSummary);
 
   return (
     <>
       <Card className="col-span-4">
-        <CardHeader className="flex justify-between">
+        <CardHeader className="flex justify-between items-center border-b">
           <CardTitle>Score Summary</CardTitle>
 
           <div className="flex gap-2">
             {/* Create Innings Button */}
+            <div className="border border-gray-200 p-2 px-5 rounded-md flex gap-4 items-center text-gray-400">
+              <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse" />
+              {`${scoreSummary?.innings.number} - Inning`}
+            </div>
             <CreateInningsDialog />
           </div>
         </CardHeader>
@@ -143,7 +174,7 @@ export default function ScoreSummary() {
           <div className="flex flex-col gap-6">
             <div className="flex flex-col">
               <h1 className="text-2xl">
-                {matchDetails?.team_a?.full_name || "Team A"} :{" "}
+                {scoreSummary?.teams.batting_team || "Batting Team"} :{" "}
                 <span>
                   {loading
                     ? "Loading..."
@@ -151,7 +182,7 @@ export default function ScoreSummary() {
                 </span>
               </h1>
               <h1 className="text-xl">
-                {matchDetails?.team_b?.full_name || "Team B"} :{" "}
+                {scoreSummary?.teams.bowling_team || "Bowling Team"} :{" "}
                 <span>
                   {0}/{0} ({"0.0"})
                 </span>
