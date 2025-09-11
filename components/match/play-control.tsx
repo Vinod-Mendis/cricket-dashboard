@@ -15,7 +15,7 @@ export default function PlayControl() {
       {" "}
       <PlayControlEdit open={isDialogOpen} onOpenChange={setIsDialogOpen} />
       <Card className="col-span-1">
-        <CardHeader className="flex justify-between">
+        <CardHeader className="flex justify-between items-center border-b">
           <CardTitle>Play Control</CardTitle>
           <Button
             className="col-span-1 aspect-square mx-1"
@@ -27,23 +27,17 @@ export default function PlayControl() {
           {/* left col */}
           <div className="col-span-2 flex-col gap-2 flex pt-10">
             <div className="grid grid-cols-12 w-full">
-              <Label className="col-span-2">Striker :</Label>
+              <Label className="col-span-3">Striker :</Label>
               <p className="col-span-9 px-3 py-2 border rounded-md">
                 Player Name
               </p>
-              <Button className="aspect-square ml-2">
-                <Replace />{" "}
-              </Button>
             </div>
 
             <div className="grid grid-cols-12 w-full">
-              <Label className="col-span-2">Non-Striker :</Label>
+              <Label className="col-span-3">Non-Striker :</Label>
               <p className="col-span-9 px-3 py-2 border rounded-md">
                 Player Name
               </p>
-              <Button className="aspect-square ml-2">
-                <Replace />{" "}
-              </Button>
             </div>
 
             <div className="grid grid-cols-12 w-full pt-1">
@@ -102,9 +96,8 @@ export default function PlayControl() {
               <p className="col-span-6 px-3 py-2 border rounded-md">
                 Bowler Name
               </p>
-              <Button className="col-span-1 aspect-square mx-1">
-                <Replace />{" "}
-              </Button>
+              {/* empty div */}
+              <div className="" />
               <div className="col-span-3 grid grid-cols-4 text-center -translate-y-4">
                 <div className="flex flex-col">
                   <p>O</p>
@@ -140,10 +133,12 @@ export default function PlayControl() {
                   0
                 </p>
               </div>
-              <Button className="col-span-1 aspect-square mx-1">
-                <Replace />{" "}
+              {/* empty div */}
+              <div className="" />
+
+              <Button className="col-span-3 text-center bg-yellow-400 hover:bg-yellow-600">
+                Unlock
               </Button>
-              <Button className="col-span-3 text-center bg-yellow-400 hover:bg-yellow-600">Unlock</Button>
             </div>
 
             <div className="grid grid-cols-12 w-full items-center">

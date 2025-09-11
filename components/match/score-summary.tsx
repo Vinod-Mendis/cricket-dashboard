@@ -160,7 +160,7 @@ export default function ScoreSummary() {
         <CardHeader className="flex justify-between items-center border-b">
           <CardTitle>Score Summary</CardTitle>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             {/* Create Innings Button */}
             <div className="border border-gray-200 p-2 px-5 rounded-md flex gap-4 items-center text-gray-400">
               <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse" />
