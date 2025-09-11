@@ -37,17 +37,17 @@ export default function Scoring() {
     no_ball_runs: null,
   });
 
-  useEffect(() => {
-    console.log("customValue changed:", customValue);
-  }, [customValue]);
+  // useEffect(() => {
+  //   console.log("customValue changed:", customValue);
+  // }, [customValue]);
 
-  useEffect(() => {
-    console.log("dialogContext changed:", dialogContext);
-  }, [dialogContext]);
+  // useEffect(() => {
+  //   console.log("dialogContext changed:", dialogContext);
+  // }, [dialogContext]);
 
-  useEffect(() => {
-    console.log("selectedButtons changed:", selectedButtons);
-  }, [selectedButtons]);
+  // useEffect(() => {
+  //   console.log("selectedButtons changed:", selectedButtons);
+  // }, [selectedButtons]);
 
   const handleQuestionMarkClick = (section: string, type: string) => {
     setDialogContext({ section, type });

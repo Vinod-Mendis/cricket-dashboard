@@ -23,11 +23,6 @@ import {
 } from "../ui/select";
 import { useMatch } from "@/context/match-context";
 
-interface CreateInningsDialogProps {
-  matchId: string;
-  onInningsCreated?: () => void;
-}
-
 interface CreateInningsData {
   match_id: string;
   innings_number: number;
@@ -63,10 +58,8 @@ async function createInnings(data: CreateInningsData) {
   }
 }
 
-export default function CreateInningsDialog({
-  matchId,
-  onInningsCreated,
-}: CreateInningsDialogProps) {
+export default function CreateInningsDialog() {
+  const { matchId } = useMatch();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -107,11 +100,6 @@ export default function CreateInningsDialog({
         target: 0,
       });
       setIsDialogOpen(false);
-
-      // Call the callback function if provided
-      if (onInningsCreated) {
-        onInningsCreated();
-      }
 
       // You can add success notification here
       alert("Innings created successfully!");

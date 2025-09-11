@@ -255,10 +255,10 @@ export default function Players({ squads, matchId, onRefresh }: any) {
     const playerKey = `${teamId}-${player.player_id}`;
     const isLoading = loadingPlayers[playerKey];
 
-    console.log("Player:", player);
-    console.log("Is Last Player:", isLastPlayer);
-    console.log("Team ID:", teamId);
-    console.log("Team:", team);
+    // console.log("Player:", player);
+    // console.log("Is Last Player:", isLastPlayer);
+    // console.log("Team ID:", teamId);
+    // console.log("Team:", team);
 
     const handleReplace = () => {
       setSelectedPlayer(player);
@@ -364,8 +364,6 @@ export default function Players({ squads, matchId, onRefresh }: any) {
     reverse = false,
   }) => {
     if (!team) return null;
-
-    console.log("Team : ", team);
 
     const playingXI = team.playing_xi || [];
     const benchPlayers = team.bench || [];
