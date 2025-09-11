@@ -1,74 +1,182 @@
 /** @format */
+
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
-// Define the context value type
-interface MatchContextType {
-  isMatchActive: string;
-  setIsMatchActive: (value: string) => void;
-  inningID: number;
-  setInningID: (value: number) => void;
+// Types
+interface Team {
+  team_id: string;
+  full_name: string;
+  short_name: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    extra: string;
+  };
+  logo: string;
 }
 
-// Create the Match Context
+interface MatchDetails {
+  match_id: string;
+  match_type: string;
+  title: string;
+  venue: string;
+  status: string;
+  start_time: string;
+  team_a: Team;
+  team_b: Team;
+  winning_team: string | null;
+  officials: {
+    field_umpire: string;
+    third_umpire: string;
+    reserve_umpire: string;
+    referee: string;
+  };
+  squads?: {
+    team_a: Squad;
+    team_b: Squad;
+  };
+  toss?: {
+    winner_team_id: string;
+    decision: string;
+  };
+}
+
+interface Squad {
+  team_info: {
+    team_id: string;
+    full_name: string;
+    short_name: string;
+    primary_color: string;
+    secondary_color: string;
+    extra_color: string;
+    logo: string;
+  };
+  players: Array<{
+    player_id: number;
+    player_full_name: string;
+    player_short_name: string;
+    player_role: string;
+    is_playing: boolean;
+    is_captain: boolean;
+    is_vice_captain: boolean;
+    is_wicket_keeper: boolean;
+  }>;
+}
+
+interface MatchContextType {
+  matchId: string;
+  matchDetails: MatchDetails | null;
+  squads: { [key: string]: Squad } | null;
+  innings: any | null;
+  loading: boolean;
+  error: string | null;
+  setMatchDetails: (details: MatchDetails | null) => void;
+  setSquads: (squads: { [key: string]: Squad } | null) => void;
+  setInnings: (innings: any | null) => void;
+  refreshMatchData: () => void;
+}
+
+// Create context
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
 
-// Custom hook to use the Match Context
-export const useMatch = (): MatchContextType => {
-  const context = useContext(MatchContext);
-  if (!context) {
-    throw new Error("useMatch must be used within a MatchProvider");
-  }
-  return context;
-};
-
-// Define props type for MatchProvider
+// Provider component
 interface MatchProviderProps {
   children: ReactNode;
+  matchId: string;
 }
 
-// Match Provider Component
-export const MatchProvider: React.FC<MatchProviderProps> = ({ children }) => {
-  // Test boolean state
-  const [isMatchActive, setIsMatchActive] = useState<string>("123");
-  const [inningID, setInningID] = useState<number>(0);
-  const [data, setData] = useState({
-    innings_id: inningID,
-    over_number: 12,
-    ball_number: 4,
-    legal_ball: true,
-    bowler_id: 101,
-    striker_id: 202,
-    non_striker_id: 203,
-    runs_scored: 2,
-    extras: 0,
-    ball_type: "LEGAL",
-    is_wicket: true,
-    team_score: 98,
-    team_wickets: 4,
-    wicket_type: "CAUGHT",
-    dismissed_player_id: 202,
-    fielder_id: 305,
-    next_batsman_id: 210,
-    shot_type: "Pull Shot",
-    fielding_position: "Deep Square Leg",
-    commentary:
-      "Batsman goes for a big pull but finds the fielder in the deep. Another wicket down!",
-  });
+export function MatchProvider({ children, matchId }: MatchProviderProps) {
+  const [matchDetails, setMatchDetails] = useState<MatchDetails | null>(null);
+  const [squads, setSquads] = useState<{ [key: string]: Squad } | null>(null);
+  const [innings, setInnings] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Match context value
-  const value: MatchContextType = {
-    isMatchActive,
-    setIsMatchActive,
-    inningID,
-    setInningID,
-    // Toggle function for convenience
+  const fetchMatchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [matchResponse, squadResponse, inningsResponse] = await Promise.all(
+        [
+          fetch(
+            `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`
+          ),
+          fetch(
+            `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}/squads`
+          ),
+          fetch(
+            `https://cricket-score-board-v4g9.onrender.com/api/innings/match/${matchId}`
+          ),
+        ]
+      );
+
+      const matchData = await matchResponse.json();
+      const squadData = await squadResponse.json();
+      const inningsData = await inningsResponse.json();
+
+      if (matchData.success) {
+        setMatchDetails(matchData.data);
+      }
+
+      if (squadData.success) {
+        setSquads(squadData.data.squads);
+      }
+
+      if (inningsData.success) {
+        setInnings(inningsData.data);
+      }
+    } catch (error) {
+      console.error("Error fetching match data:", error);
+      setError("Failed to load match data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshMatchData = () => {
+    fetchMatchData();
+  };
+
+  useEffect(() => {
+    if (matchId) {
+      fetchMatchData();
+    }
+  }, [matchId]);
+
+  const contextValue: MatchContextType = {
+    matchId,
+    matchDetails,
+    squads,
+    innings,
+    loading,
+    error,
+    setMatchDetails,
+    setSquads,
+    setInnings,
+    refreshMatchData,
   };
 
   return (
-    <MatchContext.Provider value={value}>{children}</MatchContext.Provider>
+    <MatchContext.Provider value={contextValue}>
+      {children}
+    </MatchContext.Provider>
   );
-};
+}
 
-export default MatchContext;
+// Custom hook to use match context
+export function useMatch() {
+  const context = useContext(MatchContext);
+  if (context === undefined) {
+    throw new Error("useMatch must be used within a MatchProvider");
+  }
+  return context;
+}
