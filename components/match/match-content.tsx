@@ -3,7 +3,7 @@
 import { useMatch } from "@/context/match-context";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
-import { ArrowLeft, Trophy } from "lucide-react";
+import { ArrowLeft, RefreshCcw, Trophy } from "lucide-react";
 import { Badge } from "../ui/badge";
 import Players from "./players";
 import ScoreSummary from "./score-summary";
@@ -14,9 +14,18 @@ import PreviewData from "./preview-data";
 import ButtonPanel from "./button-panel";
 import BallByBall from "./ball-by-ball";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { getTextColor } from "@/utils/getTextColor";
 
 export default function MatchContent() {
-  const { matchDetails, squads, matchId, innings, loading, error } = useMatch();
+  const {
+    matchDetails,
+    squads,
+    matchId,
+    innings,
+    loading,
+    error,
+    refreshMatchData,
+  } = useMatch();
   const router = useRouter();
 
   if (loading) {
@@ -84,6 +93,35 @@ export default function MatchContent() {
                 Back to Matches
               </Button>
               <div className="flex gap-4 items-center justify-between">
+                <Badge
+                  style={{
+                    backgroundColor: matchDetails.team_a.colors.primary,
+                    color: getTextColor(matchDetails.team_a.colors.primary),
+                  }}
+                  className="uppercase p-2 px-4">
+                  {matchDetails.team_a.short_name}
+                </Badge>
+
+                <p className="text-muted-foreground font-bold">VS</p>
+
+                <Badge
+                  style={{
+                    backgroundColor: matchDetails.team_b.colors.primary,
+                    color: getTextColor(matchDetails.team_b.colors.primary),
+                  }}
+                  className="uppercase p-2 px-4">
+                  {matchDetails.team_b.short_name}
+                </Badge>
+              </div>
+              {/* <div className="h-full w-px bg-gray-300"></div> */}
+            </div>
+            <Button
+              className="bg-red-400 hover:bg-red-500"
+              onClick={refreshMatchData}>
+              Refresh <RefreshCcw />
+            </Button>
+            <div className="flex gap-4">
+              <div className="flex gap-4 items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold text-balance">
                     {matchDetails.title}
@@ -113,7 +151,7 @@ export default function MatchContent() {
         <div className="flex flex-col gap-4 ">
           <div className="grid grid-cols-5 gap-4">
             <div className="col-span-4 flex flex-col gap-4">
-              <ScoreSummary matchId={matchId} matchDetails={matchDetails} />
+              <ScoreSummary/>
               <PlayControl />
               <Scoring />
             </div>
