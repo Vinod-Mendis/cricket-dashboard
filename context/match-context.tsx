@@ -23,6 +23,14 @@ interface Team {
   logo: string;
 }
 
+interface TossData {
+  winner_team_id: string;
+  winner_team_name: string;
+  winner_short_name: string;
+  decision: string;
+  summary: string;
+}
+
 interface MatchDetails {
   match_id: string;
   match_type: string;
@@ -71,6 +79,7 @@ interface Squad {
   }>;
 }
 
+
 interface MatchContextType {
   matchId: string;
   matchDetails: MatchDetails | null;
@@ -82,6 +91,9 @@ interface MatchContextType {
   setSquads: (squads: { [key: string]: Squad } | null) => void;
   setInnings: (innings: any | null) => void;
   refreshMatchData: () => void;
+  toss: TossData | null;
+  setToss: (toss: TossData | null) => void;
+  
 }
 
 // Create context
@@ -97,16 +109,18 @@ export function MatchProvider({ children, matchId }: MatchProviderProps) {
   const [matchDetails, setMatchDetails] = useState<MatchDetails | null>(null);
   const [squads, setSquads] = useState<{ [key: string]: Squad } | null>(null);
   const [innings, setInnings] = useState<any | null>(null);
+  const [toss, setToss] = useState<TossData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // In MatchContext.tsx, modify fetchMatchData:
   const fetchMatchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [matchResponse, squadResponse, inningsResponse] = await Promise.all(
-        [
+      const [matchResponse, squadResponse, inningsResponse, tossResponse] =
+        await Promise.all([
           fetch(
             `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}`
           ),
@@ -116,12 +130,15 @@ export function MatchProvider({ children, matchId }: MatchProviderProps) {
           fetch(
             `https://cricket-score-board-v4g9.onrender.com/api/innings/match/${matchId}`
           ),
-        ]
-      );
+          fetch(
+            `https://cricket-score-board-v4g9.onrender.com/api/matches/${matchId}/toss`
+          ),
+        ]);
 
       const matchData = await matchResponse.json();
       const squadData = await squadResponse.json();
       const inningsData = await inningsResponse.json();
+      const tossData = await tossResponse.json();
 
       if (matchData.success) {
         setMatchDetails(matchData.data);
@@ -134,6 +151,11 @@ export function MatchProvider({ children, matchId }: MatchProviderProps) {
       if (inningsData.success) {
         setInnings(inningsData.data);
       }
+
+      // Add toss data handling
+      if (tossData.success && tossData.data.toss) {
+        setToss(tossData.data.toss);
+      }
     } catch (error) {
       console.error("Error fetching match data:", error);
       setError("Failed to load match data");
@@ -141,6 +163,7 @@ export function MatchProvider({ children, matchId }: MatchProviderProps) {
       setLoading(false);
     }
   };
+
 
   const refreshMatchData = () => {
     fetchMatchData();
@@ -157,6 +180,8 @@ export function MatchProvider({ children, matchId }: MatchProviderProps) {
     matchDetails,
     squads,
     innings,
+    toss,
+    setToss,
     loading,
     error,
     setMatchDetails,
