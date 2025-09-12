@@ -98,7 +98,6 @@ function MatchCard({
   onEdit: (match: Match) => void;
   onDelete: (matchId: string) => void;
 }) {
-  const router = useRouter();
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
