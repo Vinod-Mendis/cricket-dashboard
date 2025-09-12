@@ -30,7 +30,6 @@ import {
   Search,
   Edit,
   Trash2,
-  Link,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -98,6 +97,7 @@ function MatchCard({
   onEdit: (match: Match) => void;
   onDelete: (matchId: string) => void;
 }) {
+  const router = useRouter();
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
@@ -135,117 +135,115 @@ function MatchCard({
 
   const { date, time } = formatDateTime(match.start_time);
 
-  // const handleCardClick = () => {
-  //   router.push(`/match/${match.match_id}`);
-  // };
+  const handleCardClick = () => {
+    router.push(`/match/${match.match_id}`);
+  };
 
   return (
-    <Link href={`/match/${match.match_id}`} className="no-underline">
-      <Card className="hover:shadow-md transition-shadow cursor-pointer group">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold">
-              {match.match_type}
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <Badge
-                className={`${getStatusColor(
-                  match.status
-                )} text-white capitalize`}>
-                {match.status.toLowerCase()}
+    <Card
+      className="hover:shadow-md transition-shadow cursor-pointer group"
+      onClick={handleCardClick}>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold">
+            {match.match_type}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Badge
+              className={`${getStatusColor(
+                match.status
+              )} text-white capitalize`}>
+              {match.status.toLowerCase()}
+            </Badge>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(match);
+                }}>
+                <Edit className="h-3 w-3" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(match.match_id);
+                }}>
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Match Title */}
+        <div className="font-semibold text-center text-lg">{match.title}</div>
+
+        {/* Teams */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+              style={{ backgroundColor: match.team_a_color }}>
+              {match.team_a_name.substring(0, 3).toUpperCase()}
+            </div>
+            <div>
+              <div className="font-semibold">{match.team_a_name}</div>
+            </div>
+          </div>
+
+          <div className="text-lg font-bold text-muted-foreground">VS</div>
+
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <div className="font-semibold">{match.team_b_name}</div>
+            </div>
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+              style={{ backgroundColor: match.team_b_color }}>
+              {match.team_b_name.substring(0, 3).toUpperCase()}
+            </div>
+          </div>
+        </div>
+
+        {/* Match Details */}
+        <div className="space-y-2 pt-2 border-t">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>
+              {date} at {time}
+            </span>
+            {match.day_night && (
+              <Badge variant="outline" className="text-xs">
+                D/N
               </Badge>
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(match);
-                  }}>
-                  <Edit className="h-3 w-3" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(match.match_id);
-                  }}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Match Title */}
-          <div className="font-semibold text-center text-lg">{match.title}</div>
-
-          {/* Teams */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                style={{ backgroundColor: match.team_a_color }}>
-                {match.team_a_name.substring(0, 3).toUpperCase()}
-              </div>
-              <div>
-                <div className="font-semibold">{match.team_a_name}</div>
-              </div>
-            </div>
-
-            <div className="text-lg font-bold text-muted-foreground">VS</div>
-
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="font-semibold">{match.team_b_name}</div>
-              </div>
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                style={{ backgroundColor: match.team_b_color }}>
-                {match.team_b_name.substring(0, 3).toUpperCase()}
-              </div>
-            </div>
-          </div>
-
-          {/* Match Details */}
-          <div className="space-y-2 pt-2 border-t">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>
-                {date} at {time}
-              </span>
-              {match.day_night && (
-                <Badge variant="outline" className="text-xs">
-                  D/N
-                </Badge>
-              )}
-            </div>
-            {match.venue_name && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>
-                  {match.venue_name}, {match.venue_city}
-                </span>
-              </div>
             )}
-            {/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          </div>
+          {match.venue_name && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              <span>
+                {match.venue_name}, {match.venue_city}
+              </span>
+            </div>
+          )}
+          {/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>
               🌤️ {match.weather_condition}, {match.temperature}°C
             </span>
           </div> */}
-            {match.winning_team_name && (
-              <div className="flex items-center gap-2 text-sm">
-                <Trophy className="h-4 w-4 text-primary" />
-                <span className="font-medium">
-                  {match.winning_team_name} won
-                </span>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
+          {match.winning_team_name && (
+            <div className="flex items-center gap-2 text-sm">
+              <Trophy className="h-4 w-4 text-primary" />
+              <span className="font-medium">{match.winning_team_name} won</span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
