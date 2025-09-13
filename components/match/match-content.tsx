@@ -15,15 +15,11 @@ import ButtonPanel from "./button-panel";
 import BallByBall from "./ball-by-ball";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { getTextColor } from "@/utils/getTextColor";
+import BattingOrder from "./batting-order";
 
 export default function MatchContent() {
-  const {
-    matchDetails,
-    squads,
-    matchId,
-    loading,
-    refreshMatchData,
-  } = useMatch();
+  const { matchDetails, squads, matchId, loading, refreshMatchData } =
+    useMatch();
   const router = useRouter();
 
   if (loading) {
@@ -149,7 +145,7 @@ export default function MatchContent() {
         <div className="flex flex-col gap-4 ">
           <div className="grid grid-cols-5 gap-4">
             <div className="col-span-4 flex flex-col gap-4">
-              <ScoreSummary/>
+              <ScoreSummary />
               <PlayControl />
               <Scoring />
             </div>
@@ -160,7 +156,10 @@ export default function MatchContent() {
             <ButtonPanel />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Players squads={squads} matchId={matchId} />
+            <div className="flex flex-col gap-4">
+              <BattingOrder />
+              <Players squads={squads} matchId={matchId} />
+            </div>
             <BallByBall inningId={5} />
           </div>
 

@@ -79,7 +79,6 @@ interface Squad {
   }>;
 }
 
-
 interface MatchContextType {
   matchId: string;
   matchDetails: MatchDetails | null;
@@ -93,7 +92,7 @@ interface MatchContextType {
   refreshMatchData: () => void;
   toss: TossData | null;
   setToss: (toss: TossData | null) => void;
-  
+  inningId: number | null;
 }
 
 // Create context
@@ -109,6 +108,7 @@ export function MatchProvider({ children, matchId }: MatchProviderProps) {
   const [matchDetails, setMatchDetails] = useState<MatchDetails | null>(null);
   const [squads, setSquads] = useState<{ [key: string]: Squad } | null>(null);
   const [innings, setInnings] = useState<any | null>(null);
+  const [inningId, setInningID] = useState<any | null>(null);
   const [toss, setToss] = useState<TossData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -150,6 +150,7 @@ export function MatchProvider({ children, matchId }: MatchProviderProps) {
 
       if (inningsData.success) {
         setInnings(inningsData.data);
+        setInningID(inningsData.data[0]?.id || null);
       }
 
       // Add toss data handling
@@ -163,7 +164,6 @@ export function MatchProvider({ children, matchId }: MatchProviderProps) {
       setLoading(false);
     }
   };
-
 
   const refreshMatchData = () => {
     fetchMatchData();
@@ -180,6 +180,7 @@ export function MatchProvider({ children, matchId }: MatchProviderProps) {
     matchDetails,
     squads,
     innings,
+    inningId,
     toss,
     setToss,
     loading,

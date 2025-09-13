@@ -1,11 +1,16 @@
 /** @format */
 
-import React, { useState, useEffect } from "react";
+"use client";
+
+/** @format */
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Edit, User, Users, Target } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { useMatch } from "@/context/match-context";
+import EditBattingOrderDialog from "../modals/edit-batting-order";
 
 // Type definitions
 interface BattingPlayer {
@@ -55,6 +60,7 @@ export default function BattingOrder() {
   >(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const fetchBattingOrder = async () => {
     if (!inningId) {
@@ -97,7 +103,7 @@ export default function BattingOrder() {
 
   const renderPlayerCard = (
     player: BattingPlayer,
-    isCurrentlyBatting: boolean = false
+    isCurrentlyBatting = false
   ) => (
     <div
       key={player.id}
@@ -146,6 +152,10 @@ export default function BattingOrder() {
       )}
     </div>
   );
+
+  const handleOrderUpdated = () => {
+    fetchBattingOrder();
+  };
 
   if (loading) {
     return (
@@ -202,75 +212,92 @@ export default function BattingOrder() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="border-b flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Batting Order</CardTitle>
-        <Button variant="outline" size="sm">
-          <Edit className="h-4 w-4" />
-        </Button>
-      </CardHeader>
+    <>
+      <Card className="w-full">
+        <CardHeader className="border-b flex flex-row items-center justify-between">
+          <CardTitle className="text-lg">Batting Order</CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setEditDialogOpen(true)}
+            disabled={!battingData}>
+            <Edit className="h-4 w-4" />
+          </Button>
+        </CardHeader>
 
-      <CardContent className="p-6 space-y-6">
-        {/* Currently Batting Section */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Target className="h-5 w-5 text-blue-600" />
-            <h3 className="text-base font-semibold text-gray-900">
-              Currently Batting
-            </h3>
-            <Badge variant="outline" className="ml-auto">
-              {battingData.currently_batting.length}
-            </Badge>
+        <CardContent className="p-6 space-y-6">
+          {/* Currently Batting Section */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="h-5 w-5 text-blue-600" />
+              <h3 className="text-base font-semibold text-gray-900">
+                Currently Batting
+              </h3>
+              <Badge variant="outline" className="ml-auto">
+                {battingData.currently_batting.length}
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              {battingData.currently_batting.length > 0 ? (
+                battingData.currently_batting.map((player) =>
+                  renderPlayerCard(player, true)
+                )
+              ) : (
+                <div className="text-sm text-gray-500 py-4 text-center">
+                  No batsmen currently at the crease
+                </div>
+              )}
+            </div>
           </div>
-          <div className="space-y-2">
-            {battingData.currently_batting.length > 0 ? (
-              battingData.currently_batting.map((player) =>
-                renderPlayerCard(player, true)
-              )
-            ) : (
-              <div className="text-sm text-gray-500 py-4 text-center">
-                No batsmen currently at the crease
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Next Batsmen Section */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="h-5 w-5 text-gray-600" />
-            <h3 className="text-base font-semibold text-gray-900">
-              Next Batsmen
-            </h3>
-            <Badge variant="outline" className="ml-auto">
-              {battingData.next_batsmen.length}
-            </Badge>
+          {/* Next Batsmen Section */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Users className="h-5 w-5 text-gray-600" />
+              <h3 className="text-base font-semibold text-gray-900">
+                Next Batsmen
+              </h3>
+              <Badge variant="outline" className="ml-auto">
+                {battingData.next_batsmen.length}
+              </Badge>
+            </div>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {battingData.next_batsmen.length > 0 ? (
+                battingData.next_batsmen.map((player) =>
+                  renderPlayerCard(player, false)
+                )
+              ) : (
+                <div className="text-sm text-gray-500 py-4 text-center">
+                  No more batsmen to come
+                </div>
+              )}
+            </div>
           </div>
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {battingData.next_batsmen.length > 0 ? (
-              battingData.next_batsmen.map((player) =>
-                renderPlayerCard(player, false)
-              )
-            ) : (
-              <div className="text-sm text-gray-500 py-4 text-center">
-                No more batsmen to come
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Total Batsmen */}
-        <div className="pt-4 border-t">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">
-              Total Batsmen
-            </span>
-            <Badge variant="secondary" className="font-semibold">
-              {battingData.total_batsmen}
-            </Badge>
+          {/* Total Batsmen */}
+          <div className="pt-4 border-t">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">
+                Total Batsmen
+              </span>
+              <Badge variant="secondary" className="font-semibold">
+                {battingData.total_batsmen}
+              </Badge>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Edit Dialog */}
+      {battingData && (
+        <EditBattingOrderDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          battingOrder={battingData.batting_order}
+          currentlyBatting={battingData.currently_batting}
+          onOrderUpdated={handleOrderUpdated}
+        />
+      )}
+    </>
   );
 }
