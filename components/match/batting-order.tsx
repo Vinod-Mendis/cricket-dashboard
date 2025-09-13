@@ -72,6 +72,47 @@ export default function BattingOrder() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [singleEditDialogOpen, setSingleEditDialogOpen] = useState(false);
   const [swapDialogOpen, setSwapDialogOpen] = useState(false);
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+
+  const handleCleanup = async () => {
+    if (!battingData?.innings_id) {
+      console.error("No innings ID available for cleanup");
+      return;
+    }
+
+    setCleanupLoading(true);
+
+    try {
+      const response = await fetch(
+        `https://cricket-score-board-v4g9.onrender.com/api/ballByBall/innings/${battingData.innings_id}/batting-order/cleanup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Refresh the batting order data
+        await fetchBattingOrder();
+        console.log("Cleanup completed successfully");
+      } else {
+        throw new Error("Failed to cleanup batting positions");
+      }
+    } catch (error) {
+      console.error("Error during cleanup:", error);
+      // You can add toast notification here if you have one
+    } finally {
+      setCleanupLoading(false);
+    }
+  };
 
   const fetchBattingOrder = async () => {
     if (!inningId) {
@@ -249,6 +290,14 @@ export default function BattingOrder() {
         <CardHeader className="border-b flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Batting Order</CardTitle>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCleanup}
+              disabled={!battingData || cleanupLoading}>
+              <ArrowRightLeft className="h-4 w-4 mr-1" />
+              {cleanupLoading ? "Cleaning..." : "Cleanup"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
