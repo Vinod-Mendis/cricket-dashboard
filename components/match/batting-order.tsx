@@ -6,11 +6,20 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Edit, User, Users, Target } from "lucide-react";
+import {
+  Edit,
+  User,
+  Users,
+  Target,
+  ArrowRightLeft,
+  Replace,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { useMatch } from "@/context/match-context";
 import EditBattingOrderDialog from "../modals/edit-batting-order";
+import EditSinglePositionDialog from "../modals/edit-single-batting-position";
+import SwapPlayersDialog from "../modals/swap-player-batting-order";
 
 // Type definitions
 interface BattingPlayer {
@@ -61,6 +70,8 @@ export default function BattingOrder() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [singleEditDialogOpen, setSingleEditDialogOpen] = useState(false);
+  const [swapDialogOpen, setSwapDialogOpen] = useState(false);
 
   const fetchBattingOrder = async () => {
     if (!inningId) {
@@ -162,9 +173,16 @@ export default function BattingOrder() {
       <Card className="w-full">
         <CardHeader className="border-b flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Batting Order</CardTitle>
-          <Button variant="outline" size="sm">
-            <Edit className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled>
+              <ArrowRightLeft className="h-4 w-4 mr-1" />
+              Move Player
+            </Button>
+            <Button variant="outline" size="sm" disabled>
+              <Edit className="h-4 w-4 mr-1" />
+              Edit All
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-6">
           <div className="flex items-center justify-center py-8">
@@ -180,9 +198,16 @@ export default function BattingOrder() {
       <Card className="w-full">
         <CardHeader className="border-b flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Batting Order</CardTitle>
-          <Button variant="outline" size="sm">
-            <Edit className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled>
+              <ArrowRightLeft className="h-4 w-4 mr-1" />
+              Move Player
+            </Button>
+            <Button variant="outline" size="sm" disabled>
+              <Edit className="h-4 w-4 mr-1" />
+              Edit All
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-6">
           <div className="flex items-center justify-center py-8">
@@ -198,9 +223,16 @@ export default function BattingOrder() {
       <Card className="w-full">
         <CardHeader className="border-b flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Batting Order</CardTitle>
-          <Button variant="outline" size="sm">
-            <Edit className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled>
+              <ArrowRightLeft className="h-4 w-4 mr-1" />
+              Move Player
+            </Button>
+            <Button variant="outline" size="sm" disabled>
+              <Edit className="h-4 w-4 mr-1" />
+              Edit All
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-6">
           <div className="flex items-center justify-center py-8">
@@ -216,13 +248,32 @@ export default function BattingOrder() {
       <Card className="w-full">
         <CardHeader className="border-b flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Batting Order</CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setEditDialogOpen(true)}
-            disabled={!battingData}>
-            <Edit className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSwapDialogOpen(true)}
+              disabled={!battingData}>
+              <ArrowRightLeft className="h-4 w-4 mr-1" />
+              Swap Players
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSingleEditDialogOpen(true)}
+              disabled={!battingData}>
+              <Replace className="h-4 w-4 mr-1" />
+              Move Player
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditDialogOpen(true)}
+              disabled={!battingData}>
+              <Edit className="h-4 w-4 mr-1" />
+              Edit All
+            </Button>
+          </div>
         </CardHeader>
 
         <CardContent className="p-6 space-y-6">
@@ -263,9 +314,41 @@ export default function BattingOrder() {
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {battingData.next_batsmen.length > 0 ? (
-                battingData.next_batsmen.map((player) =>
-                  renderPlayerCard(player, false)
-                )
+                battingData.next_batsmen.map((player, index) => (
+                  <div
+                    key={player.id}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-gray-50 hover:bg-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-600">
+                          {player.batting_position}
+                        </span>
+                        <User className="h-4 w-4 text-gray-400" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900">
+                            {player.player_name}
+                          </span>
+                          {index === 0 && (
+                            <Badge variant="secondary" className="text-xs">
+                              Next Batsman
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {player.player_role}
+                        </span>
+                      </div>
+                    </div>
+
+                    {player.status !== "NOT_OUT" && (
+                      <Badge variant="destructive" className="text-xs">
+                        {player.status}
+                      </Badge>
+                    )}
+                  </div>
+                ))
               ) : (
                 <div className="text-sm text-gray-500 py-4 text-center">
                   No more batsmen to come
@@ -288,7 +371,18 @@ export default function BattingOrder() {
         </CardContent>
       </Card>
 
-      {/* Edit Dialog */}
+      {/* Swap Players Dialog */}
+      {battingData && (
+        <SwapPlayersDialog
+          isOpen={swapDialogOpen}
+          onClose={() => setSwapDialogOpen(false)}
+          nextBatsmen={battingData.next_batsmen}
+          onUpdate={handleOrderUpdated}
+          inningsId={battingData.innings_id}
+        />
+      )}
+
+      {/* Edit All Dialog */}
       {battingData && (
         <EditBattingOrderDialog
           open={editDialogOpen}
@@ -296,6 +390,17 @@ export default function BattingOrder() {
           battingOrder={battingData.batting_order}
           currentlyBatting={battingData.currently_batting}
           onOrderUpdated={handleOrderUpdated}
+        />
+      )}
+
+      {/* Edit Single Position Dialog */}
+      {battingData && (
+        <EditSinglePositionDialog
+          isOpen={singleEditDialogOpen}
+          onClose={() => setSingleEditDialogOpen(false)}
+          battingOrder={battingData.batting_order}
+          onUpdate={handleOrderUpdated}
+          inningsId={battingData.innings_id}
         />
       )}
     </>
