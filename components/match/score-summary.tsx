@@ -41,7 +41,7 @@ interface ScoreSummaryResponse {
 }
 
 export default function ScoreSummary() {
-  const { toss } = useMatch();
+  const { toss, } = useMatch();
   const [scoreSummary, setScoreSummary] = useState<
     ScoreSummaryResponse["data"] | null
   >(null);
@@ -152,7 +152,7 @@ export default function ScoreSummary() {
     scoreSummary?.summary?.current_score || ""
   );
 
-  console.log("Score Summary:", scoreSummary);
+  // console.log("Score Summary:", scoreSummary);
 
   return (
     <>
