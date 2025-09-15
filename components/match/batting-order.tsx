@@ -4,24 +4,6 @@
 
 /** @format */
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import {
-  Edit,
-  User,
-  Users,
-  Target,
-  ArrowRightLeft,
-  Replace,
-} from "lucide-react";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { useMatch } from "@/context/match-context";
-import EditBattingOrderDialog from "../modals/edit-batting-order";
-import EditSinglePositionDialog from "../modals/edit-single-batting-position";
-import SwapPlayersDialog from "../modals/swap-player-batting-order";
-
-// Type definitions
 interface BattingPlayer {
   id: number;
   innings_id: number;
@@ -51,107 +33,36 @@ interface BattingPlayer {
   player_role: string;
 }
 
-interface BattingOrderResponse {
-  success: boolean;
-  data: {
-    innings_id: string;
-    batting_order: BattingPlayer[];
-    total_batsmen: number;
-    currently_batting: BattingPlayer[];
-    next_batsmen: BattingPlayer[];
-  };
-}
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import {
+  Edit,
+  User,
+  Users,
+  Target,
+  ArrowRightLeft,
+  Replace,
+} from "lucide-react";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { useMatch } from "@/context/match-context";
+import EditBattingOrderDialog from "../modals/edit-batting-order";
+import EditSinglePositionDialog from "../modals/edit-single-batting-position";
+import SwapPlayersDialog from "../modals/swap-player-batting-order";
 
 export default function BattingOrder() {
-  const { inningId } = useMatch();
-  const [battingData, setBattingData] = useState<
-    BattingOrderResponse["data"] | null
-  >(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const {
+    loading,
+    battingOrder,
+    refreshBattingOrder,
+    handleBattingOrderCleanup,
+    cleanupLoading,
+  } = useMatch();
+
   const [error, setError] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [singleEditDialogOpen, setSingleEditDialogOpen] = useState(false);
   const [swapDialogOpen, setSwapDialogOpen] = useState(false);
-  const [cleanupLoading, setCleanupLoading] = useState(false);
-
-  const handleCleanup = async () => {
-    if (!battingData?.innings_id) {
-      console.error("No innings ID available for cleanup");
-      return;
-    }
-
-    setCleanupLoading(true);
-
-    try {
-      const response = await fetch(
-        `https://cricket-score-board-v4g9.onrender.com/api/ballByBall/innings/${battingData.innings_id}/batting-order/cleanup`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        // Refresh the batting order data
-        await fetchBattingOrder();
-        console.log("Cleanup completed successfully");
-      } else {
-        throw new Error("Failed to cleanup batting positions");
-      }
-    } catch (error) {
-      console.error("Error during cleanup:", error);
-      // You can add toast notification here if you have one
-    } finally {
-      setCleanupLoading(false);
-    }
-  };
-
-  const fetchBattingOrder = async () => {
-    if (!inningId) {
-      setError("No innings ID available");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch(
-        `https://cricket-score-board-v4g9.onrender.com/api/ballByBall/innings/${1}/batting-order`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data: BattingOrderResponse = await response.json();
-
-      if (data.success) {
-        setBattingData(data.data);
-      } else {
-        throw new Error("API returned unsuccessful response");
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch batting order"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBattingOrder();
-  }, [inningId]);
 
   const renderPlayerCard = (
     player: BattingPlayer,
@@ -206,7 +117,7 @@ export default function BattingOrder() {
   );
 
   const handleOrderUpdated = () => {
-    fetchBattingOrder();
+    refreshBattingOrder();
   };
 
   if (loading) {
@@ -259,7 +170,7 @@ export default function BattingOrder() {
     );
   }
 
-  if (!battingData) {
+  if (!battingOrder) {
     return (
       <Card className="w-full">
         <CardHeader className="border-b flex flex-row items-center justify-between">
@@ -293,8 +204,8 @@ export default function BattingOrder() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleCleanup}
-              disabled={!battingData || cleanupLoading}>
+              onClick={handleBattingOrderCleanup}
+              disabled={!battingOrder || cleanupLoading}>
               <ArrowRightLeft className="h-4 w-4 mr-1" />
               {cleanupLoading ? "Cleaning..." : "Cleanup"}
             </Button>
@@ -302,7 +213,7 @@ export default function BattingOrder() {
               variant="outline"
               size="sm"
               onClick={() => setSwapDialogOpen(true)}
-              disabled={!battingData}>
+              disabled={!battingOrder}>
               <ArrowRightLeft className="h-4 w-4 mr-1" />
               Swap Players
             </Button>
@@ -310,7 +221,7 @@ export default function BattingOrder() {
               variant="outline"
               size="sm"
               onClick={() => setSingleEditDialogOpen(true)}
-              disabled={!battingData}>
+              disabled={!battingOrder}>
               <Replace className="h-4 w-4 mr-1" />
               Move Player
             </Button>
@@ -318,7 +229,7 @@ export default function BattingOrder() {
               variant="outline"
               size="sm"
               onClick={() => setEditDialogOpen(true)}
-              disabled={!battingData}>
+              disabled={!battingOrder}>
               <Edit className="h-4 w-4 mr-1" />
               Edit All
             </Button>
@@ -334,12 +245,12 @@ export default function BattingOrder() {
                 Currently Batting
               </h3>
               <Badge variant="outline" className="ml-auto">
-                {battingData.currently_batting.length}
+                {battingOrder.currently_batting.length}
               </Badge>
             </div>
             <div className="space-y-2">
-              {battingData.currently_batting.length > 0 ? (
-                battingData.currently_batting.map((player) =>
+              {battingOrder.currently_batting.length > 0 ? (
+                battingOrder.currently_batting.map((player) =>
                   renderPlayerCard(player, true)
                 )
               ) : (
@@ -358,12 +269,12 @@ export default function BattingOrder() {
                 Next Batsmen
               </h3>
               <Badge variant="outline" className="ml-auto">
-                {battingData.next_batsmen.length}
+                {battingOrder.next_batsmen.length}
               </Badge>
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto">
-              {battingData.next_batsmen.length > 0 ? (
-                battingData.next_batsmen.map((player, index) => (
+              {battingOrder.next_batsmen.length > 0 ? (
+                battingOrder.next_batsmen.map((player, index) => (
                   <div
                     key={player.id}
                     className="flex items-center justify-between p-3 rounded-lg border bg-gray-50 hover:bg-gray-100">
@@ -413,7 +324,7 @@ export default function BattingOrder() {
                 Total Batsmen
               </span>
               <Badge variant="secondary" className="font-semibold">
-                {battingData.total_batsmen}
+                {battingOrder.total_batsmen}
               </Badge>
             </div>
           </div>
@@ -421,35 +332,35 @@ export default function BattingOrder() {
       </Card>
 
       {/* Swap Players Dialog */}
-      {battingData && (
+      {battingOrder && (
         <SwapPlayersDialog
           isOpen={swapDialogOpen}
           onClose={() => setSwapDialogOpen(false)}
-          nextBatsmen={battingData.next_batsmen}
+          nextBatsmen={battingOrder.next_batsmen}
           onUpdate={handleOrderUpdated}
-          inningsId={battingData.innings_id}
+          inningsId={battingOrder.innings_id}
         />
       )}
 
       {/* Edit All Dialog */}
-      {battingData && (
+      {battingOrder && (
         <EditBattingOrderDialog
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
-          battingOrder={battingData.batting_order}
-          currentlyBatting={battingData.currently_batting}
+          battingOrder={battingOrder.batting_order}
+          currentlyBatting={battingOrder.currently_batting}
           onOrderUpdated={handleOrderUpdated}
         />
       )}
 
       {/* Edit Single Position Dialog */}
-      {battingData && (
+      {battingOrder && (
         <EditSinglePositionDialog
           isOpen={singleEditDialogOpen}
           onClose={() => setSingleEditDialogOpen(false)}
-          battingOrder={battingData.batting_order}
+          battingOrder={battingOrder.batting_order}
           onUpdate={handleOrderUpdated}
-          inningsId={battingData.innings_id}
+          inningsId={battingOrder.innings_id}
         />
       )}
     </>
