@@ -286,6 +286,8 @@ interface MatchContextType {
   refreshBattingOrder: () => void;
   handleBattingOrderCleanup: () => Promise<void>;
   cleanupLoading: boolean;
+  canEdit: boolean;
+  setCanEdit: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // Create context
@@ -316,6 +318,7 @@ export function MatchProvider({
     null
   );
   const [cleanupLoading, setCleanupLoading] = useState(false);
+  const [canEdit, setCanEdit] = useState<boolean>(false);
 
   // Fetch live status separately
   const fetchLiveStatus = async () => {
@@ -390,7 +393,7 @@ export function MatchProvider({
         `${baseURL}/api/ballByBall/innings/${1}/batting-order`
       );
 
-      const data = await response.json();      
+      const data = await response.json();
 
       if (data.success) {
         setBattingOrder(data.data);
@@ -491,6 +494,8 @@ export function MatchProvider({
     refreshBattingOrder,
     handleBattingOrderCleanup,
     cleanupLoading,
+    canEdit,
+    setCanEdit
   };
 
   return (

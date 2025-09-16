@@ -23,7 +23,7 @@ type SectionType =
   | "no_ball_runs";
 
 export default function Scoring() {
-  const { liveStatus, ballEvent, setBallEvent, inningId } = useMatch();
+  const { liveStatus, ballEvent, setBallEvent, inningId, canEdit } = useMatch();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [customValue, setCustomValue] = useState("");
   const [dialogContext, setDialogContext] = useState({ section: "", type: "" });
@@ -341,6 +341,7 @@ export default function Scoring() {
           {/* Wicket + Pen column */}
           <div className="grid grid-rows-2 gap-1">
             <Button
+              disabled={!canEdit}
               className={`h-full text-white ${
                 isButtonSelected("wicket", "wicket")
                   ? "bg-red-700"
@@ -350,6 +351,7 @@ export default function Scoring() {
               Wicket
             </Button>
             <Button
+              disabled={!canEdit}
               className={`h-full text-white ${
                 isButtonSelected("pen", "pen") ? "bg-teal-700" : "bg-teal-500"
               }`}
@@ -367,6 +369,7 @@ export default function Scoring() {
               {[0, 1, 2, 3, 4, 6, 5, "?"].map((val) => (
                 <Button
                   key={val}
+                  disabled={!canEdit}
                   variant={
                     val === "?"
                       ? "outline"
@@ -399,6 +402,7 @@ export default function Scoring() {
               {["w", 1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
+                  disabled={!canEdit}
                   variant={
                     val === "?"
                       ? "outline"
@@ -431,6 +435,7 @@ export default function Scoring() {
               {[1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
+                  disabled={!canEdit}
                   variant={
                     val === "?"
                       ? "outline"
@@ -463,6 +468,7 @@ export default function Scoring() {
               {[1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
+                  disabled={!canEdit}
                   variant={
                     val === "?"
                       ? "outline"
@@ -495,6 +501,7 @@ export default function Scoring() {
               {[1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
+                  disabled={!canEdit}
                   variant={
                     val === "?"
                       ? "outline"
@@ -527,6 +534,7 @@ export default function Scoring() {
               {[1, 2, 3, 4, "?"].map((val) => (
                 <Button
                   key={val}
+                  disabled={!canEdit}
                   variant={
                     val === "?"
                       ? "outline"
@@ -559,6 +567,7 @@ export default function Scoring() {
               {[0, 1, 2, 3, 4, 6, "?"].map((val) => (
                 <Button
                   key={val}
+                  disabled={!canEdit}
                   variant={
                     val === "?"
                       ? "outline"

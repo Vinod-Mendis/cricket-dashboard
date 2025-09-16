@@ -47,7 +47,7 @@ interface CurrentState {
 
 export default function PlayControl() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { liveStatus} = useMatch();
+  const { liveStatus, canEdit, setCanEdit } = useMatch();
   const [currentState, setCurrentState] = useState<CurrentState | null>(null);
 
   // Replace fetchBatsmanStats and fetchBowlerStats with:
@@ -81,11 +81,15 @@ export default function PlayControl() {
       <Card className="col-span-1">
         <CardHeader className="flex justify-between items-center border-b">
           <CardTitle>Play Control</CardTitle>
-          <Button
-            className="col-span-1 aspect-square mx-1"
-            onClick={() => setIsDialogOpen(true)}>
-            <Edit />
-          </Button>
+          <div className="w-10 h-auto aspect-square">
+            {canEdit && (
+              <Button
+                className="col-span-1 aspect-square mx-1"
+                onClick={() => setIsDialogOpen(true)}>
+                <Edit />
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="grid grid-cols-7">
           {/* left col */}
@@ -224,14 +228,20 @@ export default function PlayControl() {
               {/* empty div */}
               <div className="" />
 
-              <Button className="col-span-3 text-center bg-yellow-400 hover:bg-yellow-600">
-                Unlock
+              <Button
+                className={`col-span-3 text-center ${canEdit ? "bg-yellow-400 hover:bg-yellow-600" : "bg-blue-400 hover:bg-blue-600" }`}
+                onClick={() => setCanEdit(!canEdit)}>
+                {canEdit ? "LOCK" : "UNLOCK"}
               </Button>
             </div>
 
             <div className="grid grid-cols-12 w-full items-center">
               <div className="col-span-9"></div>
-              <Button className="col-span-3 text-center">End Ball</Button>
+              <div className="col-span-3">
+                {canEdit && (
+                  <Button className=" w-full text-center">End Ball</Button>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
