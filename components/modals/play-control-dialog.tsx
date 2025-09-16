@@ -75,7 +75,7 @@ export default function PlayControlEdit({
   open,
   onOpenChange,
 }: DialogControlProps) {
-  const { liveStatus, ballEvent, setBallEvent, battingOrder } = useMatch();
+  const { liveStatus, battingOrder } = useMatch();
 
   const [bowlingTeam, setBowlingTeam] = useState<BowlingTeamData | null>(null);
   const [loadingBowlers, setLoadingBowlers] = useState(false);
@@ -97,11 +97,12 @@ export default function PlayControlEdit({
     nonStrikerSixes: 0,
     thisOverSixes: 0,
     bowlerOvers: 0,
+    bowlerBalls: 0,
     bowlerMaidens: 0,
     bowlerRuns: 0,
     bowlerWickets: 0,
-    overs: 0,
-    balls: 0,
+    // overs: 0,
+    // balls: 0,
   });
   const [currentState, setCurrentState] = useState<CurrentState | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -118,33 +119,39 @@ export default function PlayControlEdit({
       if (data.success) {
         const state = data.data.current_state;
         setCurrentState(state);
-        console.log("state",state);
-        
+        console.log("state", state);
 
         // Initialize form with current state values
         setFormData((prev) => ({
           ...prev,
+          // player IDS
           striker: state.striker.id,
           nonStriker: state.non_striker.id,
           bowler: state.bowler.id,
+          // batting stats
+          //  -- Striker
           strikerRuns: state.striker.runs,
           strikerBalls: state.striker.balls,
           strikerFours: state.striker.fours,
           strikerSixes: state.striker.sixes,
+          //  -- Non-Striker
           nonStrikerRuns: state.non_striker.runs,
           nonStrikerBalls: state.non_striker.balls,
           nonStrikerFours: state.non_striker.fours,
           nonStrikerSixes: state.non_striker.sixes,
+          // Bowling stats
           bowlerOvers: parseInt(state.bowler.overs) || 0,
           bowlerMaidens: state.bowler.maidens,
           bowlerRuns: state.bowler.runs,
           bowlerWickets: state.bowler.wickets,
+          bowlerBalls: parseInt(state.bowler.balls) || 0,
+          // this_over
           thisOverRuns: parseInt(state.this_over.runs) || 0,
           thisOverBalls: parseInt(state.this_over.balls) || 0,
           thisOverFours: parseInt(state.this_over.fours) || 0,
           thisOverSixes: parseInt(state.this_over.sixes) || 0,
-          balls: parseInt(state.bowler.balls) || 0, // Current ball in over
-          overs: liveStatus?.last_ball?.over_number || 0, // Current over
+          // balls: parseInt(state.bowler.balls) || 0, // Current ball in over
+          // overs: liveStatus?.last_ball?.over_number || 0, // Current over
         }));
       }
     } catch (error) {
@@ -225,7 +232,7 @@ export default function PlayControlEdit({
         },
         bowling_stats: {
           overs: formData.bowlerOvers,
-          balls: formData.balls,
+          balls: formData.bowlerBalls,
           runs: formData.bowlerRuns,
           wickets: formData.bowlerWickets,
           maidens: formData.bowlerMaidens,
@@ -632,7 +639,7 @@ export default function PlayControlEdit({
                 </div>
 
                 {/* Overs & Balls Section */}
-                <div>
+                {/* <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-3">
                     Overs & Balls
                   </h4>
@@ -667,7 +674,7 @@ export default function PlayControlEdit({
                       />
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>
