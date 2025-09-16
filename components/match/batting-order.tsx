@@ -33,7 +33,7 @@ interface BattingPlayer {
   player_role: string;
 }
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Edit,
@@ -52,6 +52,7 @@ import SwapPlayersDialog from "../modals/swap-player-batting-order";
 
 export default function BattingOrder() {
   const {
+    error,
     loading,
     battingOrder,
     refreshBattingOrder,
@@ -59,7 +60,6 @@ export default function BattingOrder() {
     cleanupLoading,
   } = useMatch();
 
-  const [error, setError] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [singleEditDialogOpen, setSingleEditDialogOpen] = useState(false);
   const [swapDialogOpen, setSwapDialogOpen] = useState(false);

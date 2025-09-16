@@ -47,7 +47,7 @@ interface CurrentState {
 
 export default function PlayControl() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { liveStatus, ballEvent, setBallEvent } = useMatch();
+  const { liveStatus} = useMatch();
   const [currentState, setCurrentState] = useState<CurrentState | null>(null);
 
   // Replace fetchBatsmanStats and fetchBowlerStats with:

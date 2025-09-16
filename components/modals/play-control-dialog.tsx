@@ -75,7 +75,7 @@ export default function PlayControlEdit({
   open,
   onOpenChange,
 }: DialogControlProps) {
-  const { liveStatus, battingOrder } = useMatch();
+  const { battingOrder } = useMatch();
 
   const [bowlingTeam, setBowlingTeam] = useState<BowlingTeamData | null>(null);
   const [loadingBowlers, setLoadingBowlers] = useState(false);
