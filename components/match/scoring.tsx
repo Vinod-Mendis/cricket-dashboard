@@ -53,8 +53,11 @@ export default function Scoring() {
         ball_number: 0,
         legal_ball: true,
         bowler_id: null,
+        bowler_name: null, // preview only
         striker_id: null,
+        striker_name: null, // preview only
         non_striker_id: null,
+        non_striker_name: null, // preview only
         runs_scored: 0,
         extras: 0,
         ball_type: "LEGAL",
@@ -70,6 +73,36 @@ export default function Scoring() {
       });
     }
   }, [ballEvent, setBallEvent]);
+
+  // Sync bowler and batsmen from liveStatus
+  useEffect(() => {
+    if (liveStatus?.current_batsmen && ballEvent) {
+      setBallEvent({
+        ...ballEvent,
+        striker_id:
+          liveStatus.current_batsmen.find((batsman) => batsman.is_striker)
+            ?.player_id || null,
+        striker_name:
+          liveStatus.current_batsmen.find((batsman) => batsman.is_striker)
+            ?.player_name || null,
+        non_striker_id:
+          liveStatus.current_batsmen.find((batsman) => !batsman.is_striker)
+            ?.player_id || null,
+        non_striker_name:
+          liveStatus.current_batsmen.find((batsman) => !batsman.is_striker)
+            ?.player_name || null,
+        innings_id: inningId || ballEvent.innings_id,
+        bowler_id: liveStatus.current_bowler?.bowler_id || ballEvent.bowler_id,
+        bowler_name: liveStatus.current_bowler?.bowler_name || null,
+        ball_number: liveStatus?.last_ball?.ball_number || 0,
+        over_number: liveStatus?.last_ball?.over_number || 0,
+      });
+    }
+  }, [liveStatus, setBallEvent]);
+
+  useEffect(() => {
+    console.log("Ball Event Updated:", ballEvent);
+  }, [ballEvent]);
 
   const handlePenaltySubmit = () => {
     if (penaltyValue.trim()) {
@@ -158,10 +191,6 @@ export default function Scoring() {
     });
   };
 
-  useEffect(() => {
-    console.log("Ball Event Updated:", ballEvent);
-  }, [ballEvent]);
-
   const extrasTypes: SectionType[] = [
     "wides",
     "byes",
@@ -176,11 +205,29 @@ export default function Scoring() {
 
     const newEvent = { ...ballEvent };
 
-    // Reset to defaults
+    // Preserve important fields that shouldn't be reset
+    const preservedFields = {
+      bowler_name: newEvent.bowler_name,
+      bowler_id: newEvent.bowler_id,
+      striker_id: newEvent.striker_id,
+      striker_name: newEvent.striker_name,
+      non_striker_name: newEvent.non_striker_name,
+      non_striker_id: newEvent.non_striker_id,
+      innings_id: newEvent.innings_id,
+      over_number: newEvent.over_number,
+      ball_number: newEvent.ball_number,
+      team_score: newEvent.team_score,
+      team_wickets: newEvent.team_wickets,
+    };
+
+    // Reset only the scoring-related fields
     newEvent.runs_scored = 0;
-    newEvent.extras = 0; // Start fresh
+    newEvent.extras = 0;
     newEvent.legal_ball = true;
     newEvent.ball_type = "LEGAL";
+
+    // Restore preserved fields
+    Object.assign(newEvent, preservedFields);
 
     // Add penalty if penalty button is selected
     if (selectedButtons.pen !== null) {
@@ -259,24 +306,6 @@ export default function Scoring() {
     setBallEvent(newEvent);
   };
 
-  // Sync bowler and batsmen from liveStatus
-  useEffect(() => {
-    if (liveStatus?.current_batsmen && ballEvent) {
-      setBallEvent({
-        ...ballEvent,
-        striker_id:
-          liveStatus.current_batsmen.find((batsman) => batsman.is_striker)
-            ?.player_id || null,
-        non_striker_id:
-          liveStatus.current_batsmen.find((batsman) => !batsman.is_striker)
-            ?.player_id || null,
-        bowler_id: liveStatus.current_bowler?.bowler_id || ballEvent.bowler_id,
-        ball_number: liveStatus?.last_ball?.ball_number || 0,
-        over_number: liveStatus?.last_ball?.over_number || 0,
-      });
-    }
-  }, [liveStatus, setBallEvent]);
-
   // Update ball event whenever selectedButtons changes
   useEffect(() => {
     updateBallEvent();
@@ -322,6 +351,44 @@ export default function Scoring() {
     return selectedButtons[section] === value;
   };
 
+  const handleClearAll = () => {
+    // Reset all selected buttons
+    setSelectedButtons({
+      wicket: null,
+      pen: null,
+      runs: null,
+      wides: null,
+      byes: null,
+      leg_byes: null,
+      no_ball_b: null,
+      no_ball_lb: null,
+      no_ball_runs: null,
+    });
+
+    // Reset penalty amount
+    setPenaltyAmount(0);
+
+    // Reset ballEvent to defaults but preserve IDs and over/ball numbers
+    if (ballEvent) {
+      setBallEvent({
+        ...ballEvent,
+        legal_ball: true,
+        runs_scored: 0,
+        extras: 0,
+        ball_type: "LEGAL",
+        is_wicket: false,
+        wicket_type: null,
+        dismissed_player_id: null,
+        fielder_id: null,
+        shot_type: null,
+        fielding_position: null,
+        commentary: "N/A",
+      });
+    }
+
+    console.log("All ball event data cleared");
+  };
+
   return (
     <>
       <WicketDialog
@@ -331,8 +398,19 @@ export default function Scoring() {
         onWicketSubmit={handleWicketSubmit}
       />
       <Card>
-        <CardHeader>
-          <CardTitle>Scoring</CardTitle>
+        <CardHeader className="border-b">
+          <div className="flex justify-between">
+            <CardTitle>Scoring</CardTitle>
+            <div className="flex justify-end">
+              <Button
+                disabled={!canEdit}
+                variant="outline"
+                className="bg-red-50 hover:bg-red-100 border-red-300 text-red-700"
+                onClick={handleClearAll}>
+                Clear All
+              </Button>
+            </div>
+          </div>
           <div className="text-sm text-gray-600 mt-2 grid grid-cols-6 gap-2">
             <div>Ball Type: {ballEvent?.ball_type}</div>
             <div>Runs Scored: {ballEvent?.runs_scored}</div>
