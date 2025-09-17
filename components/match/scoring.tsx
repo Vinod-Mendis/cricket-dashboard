@@ -44,6 +44,8 @@ export default function Scoring() {
   });
   const [penaltyAmount, setPenaltyAmount] = useState(0);
   const [isWicketDialogOpen, setIsWicketDialogOpen] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!ballEvent) {
@@ -389,6 +391,58 @@ export default function Scoring() {
     console.log("All ball event data cleared");
   };
 
+  const handleSubmitBall = async () => {
+    if (!ballEvent) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        "https://cricket-score-board-v4g9.onrender.com/api/ballByBall/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            innings_id: ballEvent.innings_id,
+            over_number: ballEvent.over_number,
+            ball_number: ballEvent.ball_number,
+            legal_ball: ballEvent.legal_ball,
+            bowler_id: ballEvent.bowler_id,
+            striker_id: ballEvent.striker_id,
+            non_striker_id: ballEvent.non_striker_id,
+            runs_scored: ballEvent.runs_scored,
+            extras: ballEvent.extras,
+            ball_type: ballEvent.ball_type,
+            is_wicket: ballEvent.is_wicket,
+            wicket_type: ballEvent.wicket_type,
+            dismissed_player_id: ballEvent.dismissed_player_id,
+            fielder_id: ballEvent.fielder_id,
+            shot_type: ballEvent.shot_type,
+            fielding_position: ballEvent.fielding_position,
+            commentary: ballEvent.commentary,
+            team_score: ballEvent.team_score,
+            team_wickets: ballEvent.team_wickets,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Ball submitted successfully");
+        handleClearAll(); // Clear the form after successful submission
+        // Optionally refresh live status
+        // refreshLiveStatus();
+      } else {
+        console.error("Failed to submit ball");
+      }
+    } catch (error) {
+      console.error("Error submitting ball:", error);
+    } finally {
+      setIsSubmitting(false);
+      setIsConfirmDialogOpen(false);
+    }
+  };
+
   return (
     <>
       <WicketDialog
@@ -401,7 +455,14 @@ export default function Scoring() {
         <CardHeader className="border-b">
           <div className="flex justify-between">
             <CardTitle>Scoring</CardTitle>
-            <div className="flex justify-end">
+            <div className="flex gap-2">
+              <Button
+                disabled={!canEdit}
+                variant="default"
+                className="bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => setIsConfirmDialogOpen(true)}>
+                End Ball
+              </Button>
               <Button
                 disabled={!canEdit}
                 variant="outline"
@@ -786,6 +847,50 @@ export default function Scoring() {
                 Number(penaltyValue) <= 0
               }>
               Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent className="max-w-2xl w-full">
+          <DialogHeader>
+            <DialogTitle>Confirm Ball Submission</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="mb-4 text-sm text-gray-600">
+              Are you sure you want to submit this ball? Please review the data
+              below:
+            </p>
+
+            {/* Mini preview of ball event data */}
+            <div className="bg-gray-50 p-4 rounded-lg text-sm">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  Over: {ballEvent?.over_number}.{ballEvent?.ball_number}
+                </div>
+                <div>Ball Type: {ballEvent?.ball_type}</div>
+                <div>Runs: {ballEvent?.runs_scored}</div>
+                <div>Extras: {ballEvent?.extras}</div>
+                <div>Legal Ball: {ballEvent?.legal_ball ? "Yes" : "No"}</div>
+                <div>Wicket: {ballEvent?.is_wicket ? "Yes" : "No"}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsConfirmDialogOpen(false)}
+              disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitBall}
+              disabled={isSubmitting}
+              className="bg-green-600 hover:bg-green-700">
+              {isSubmitting ? "Submitting..." : "Confirm & Submit"}
             </Button>
           </div>
         </DialogContent>
