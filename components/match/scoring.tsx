@@ -27,6 +27,8 @@ export default function Scoring() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [customValue, setCustomValue] = useState("");
   const [dialogContext, setDialogContext] = useState({ section: "", type: "" });
+  const [isPenaltyDialogOpen, setIsPenaltyDialogOpen] = useState(false);
+  const [penaltyValue, setPenaltyValue] = useState("");
   const [selectedButtons, setSelectedButtons] = useState<
     Record<SectionType, string | number | null>
   >({
@@ -40,6 +42,7 @@ export default function Scoring() {
     no_ball_lb: null,
     no_ball_runs: null,
   });
+  const [penaltyAmount, setPenaltyAmount] = useState(0);
   const [isWicketDialogOpen, setIsWicketDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -68,6 +71,25 @@ export default function Scoring() {
     }
   }, [ballEvent, setBallEvent]);
 
+  const handlePenaltySubmit = () => {
+    if (penaltyValue.trim()) {
+      const penalty = Number(penaltyValue);
+      if (!isNaN(penalty) && penalty > 0) {
+        setPenaltyAmount(penalty); // Store penalty separately
+
+        // Mark penalty button as selected
+        setSelectedButtons((prev) => ({
+          ...prev,
+          pen: "pen",
+        }));
+
+        console.log(`Penalty of ${penalty} set`);
+      }
+    }
+    setIsPenaltyDialogOpen(false);
+    setPenaltyValue("");
+  };
+
   const handleWicketClick = () => {
     setIsWicketDialogOpen(true);
   };
@@ -93,6 +115,49 @@ export default function Scoring() {
     }));
   };
 
+  const handlePenaltyClick = () => {
+    setPenaltyValue("");
+    setIsPenaltyDialogOpen(true);
+  };
+
+  const handlePenaltyKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handlePenaltySubmit();
+    }
+  };
+
+  const handleQuestionMarkClick = (section: string, type: string) => {
+    setDialogContext({ section, type });
+    setCustomValue("");
+    setIsDialogOpen(true);
+  };
+
+  const handleButtonClick = (section: SectionType, value: string | number) => {
+    setSelectedButtons((prev) => {
+      const newSelected = { ...prev };
+
+      // If clicking an extras type, clear all other extras types
+      if (extrasTypes.includes(section)) {
+        extrasTypes.forEach((type) => {
+          if (type !== section) {
+            newSelected[type] = null;
+          }
+        });
+      }
+
+      // Toggle the clicked button
+      const newValue = prev[section] === value ? null : value;
+      newSelected[section] = newValue;
+
+      // Reset penalty amount if penalty button is deselected
+      if (section === "pen" && newValue === null) {
+        setPenaltyAmount(0);
+      }
+
+      return newSelected;
+    });
+  };
+
   useEffect(() => {
     console.log("Ball Event Updated:", ballEvent);
   }, [ballEvent]);
@@ -107,15 +172,20 @@ export default function Scoring() {
   ];
 
   const updateBallEvent = () => {
-    if (!ballEvent) return; // Early return if ballEvent is null
+    if (!ballEvent) return;
 
     const newEvent = { ...ballEvent };
 
     // Reset to defaults
     newEvent.runs_scored = 0;
-    newEvent.extras = 0;
+    newEvent.extras = 0; // Start fresh
     newEvent.legal_ball = true;
     newEvent.ball_type = "LEGAL";
+
+    // Add penalty if penalty button is selected
+    if (selectedButtons.pen !== null) {
+      newEvent.extras += penaltyAmount;
+    }
 
     // Set runs from runs section
     if (selectedButtons.runs !== null) {
@@ -137,9 +207,7 @@ export default function Scoring() {
         case "wides":
           newEvent.ball_type = "WIDE";
           newEvent.legal_ball = false;
-          if (extrasValue === "w") {
-            newEvent.extras += 0;
-          } else {
+          if (extrasValue !== "w") {
             newEvent.extras +=
               typeof extrasValue === "number"
                 ? extrasValue
@@ -166,23 +234,7 @@ export default function Scoring() {
           break;
 
         case "no_ball_b":
-          newEvent.ball_type = "NO_BALL";
-          newEvent.legal_ball = false;
-          newEvent.extras +=
-            typeof extrasValue === "number"
-              ? extrasValue
-              : Number.parseInt(extrasValue as string);
-          break;
-
         case "no_ball_lb":
-          newEvent.ball_type = "NO_BALL";
-          newEvent.legal_ball = false;
-          newEvent.extras +=
-            typeof extrasValue === "number"
-              ? extrasValue
-              : Number.parseInt(extrasValue as string);
-          break;
-
         case "no_ball_runs":
           newEvent.ball_type = "NO_BALL";
           newEvent.legal_ball = false;
@@ -204,37 +256,10 @@ export default function Scoring() {
       newEvent.fielder_id = null;
     }
 
-    // Set the updated ballEvent (not using a function anymore)
     setBallEvent(newEvent);
   };
 
-  const handleQuestionMarkClick = (section: string, type: string) => {
-    setDialogContext({ section, type });
-    setCustomValue("");
-    setIsDialogOpen(true);
-  };
-
-  const handleButtonClick = (section: SectionType, value: string | number) => {
-    setSelectedButtons((prev) => {
-      const newSelected = { ...prev };
-
-      // If clicking an extras type, clear all other extras types
-      if (extrasTypes.includes(section)) {
-        extrasTypes.forEach((type) => {
-          if (type !== section) {
-            newSelected[type] = null;
-          }
-        });
-      }
-
-      // Toggle the clicked button
-      newSelected[section] = prev[section] === value ? null : value;
-
-      return newSelected;
-    });
-  };
-
-  //  Sync bowler and batsmen from liveStatus
+  // Sync bowler and batsmen from liveStatus
   useEffect(() => {
     if (liveStatus?.current_batsmen && ballEvent) {
       setBallEvent({
@@ -344,19 +369,19 @@ export default function Scoring() {
               disabled={!canEdit}
               className={`h-full text-white ${
                 isButtonSelected("wicket", "wicket")
-                  ? "bg-red-700"
+                  ? "bg-green-500"
                   : "bg-red-500"
               }`}
               onClick={handleWicketClick}>
-              Wicket
+              Wicket {isButtonSelected("wicket", "wicket") && "Confirmed"}
             </Button>
             <Button
               disabled={!canEdit}
               className={`h-full text-white ${
-                isButtonSelected("pen", "pen") ? "bg-teal-700" : "bg-teal-500"
+                isButtonSelected("pen", "pen") ? "bg-green-500" : "bg-teal-500"
               }`}
-              onClick={() => handleButtonClick("pen", "pen")}>
-              Pen
+              onClick={handlePenaltyClick}>
+              Penalty {isButtonSelected("pen", "pen") && `(${penaltyAmount})`}
             </Button>
           </div>
 
@@ -629,6 +654,60 @@ export default function Scoring() {
               onClick={handleSubmitCustomValue}
               disabled={!customValue.trim()}>
               Submit
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Penalty Dialog */}
+      <Dialog open={isPenaltyDialogOpen} onOpenChange={setIsPenaltyDialogOpen}>
+        <DialogContent className="max-w-md w-full">
+          <DialogHeader>
+            <DialogTitle>Enter Penalty Value</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="penalty-value" className="text-right">
+                Penalty
+              </Label>
+              <Input
+                id="penalty-value"
+                type="number"
+                value={penaltyValue}
+                onChange={(e) => setPenaltyValue(e.target.value)}
+                onKeyPress={handlePenaltyKeyPress}
+                className="col-span-3"
+                placeholder="Enter penalty runs"
+                autoFocus
+                min="1"
+              />
+            </div>
+            <div className="text-sm text-gray-600 px-4">
+              Current extras: {ballEvent?.extras || 0} runs
+              {penaltyValue &&
+                !isNaN(Number(penaltyValue)) &&
+                Number(penaltyValue) > 0 && (
+                  <div className="mt-1 font-medium">
+                    New total: {(ballEvent?.extras || 0) + Number(penaltyValue)}{" "}
+                    runs
+                  </div>
+                )}
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsPenaltyDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handlePenaltySubmit}
+              disabled={
+                !penaltyValue.trim() ||
+                isNaN(Number(penaltyValue)) ||
+                Number(penaltyValue) <= 0
+              }>
+              Confirm
             </Button>
           </div>
         </DialogContent>
