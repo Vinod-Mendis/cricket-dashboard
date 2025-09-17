@@ -454,7 +454,7 @@ export default function Scoring() {
       />
       <Card>
         <CardHeader className="border-b">
-          <div className="flex justify-between">
+          <div className="flex justify-between border-b pb-4">
             <CardTitle>Scoring</CardTitle>
             <div className="flex gap-2">
               <Button

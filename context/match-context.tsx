@@ -201,7 +201,10 @@ interface BallEvent {
   ball_number: number;
   legal_ball: boolean;
   bowler_id: number | null;
+  bowler_name: string | null;
   striker_id: number | null;
+  striker_name: string | null;
+  non_striker_name: string | null;
   non_striker_id: number | null;
   runs_scored: number;
   extras: number;
