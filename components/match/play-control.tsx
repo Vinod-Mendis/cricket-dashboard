@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Lock, Unlock } from "lucide-react";
 import PlayControlEdit from "../modals/play-control-dialog";
 import { useMatch } from "@/context/match-context";
 
@@ -82,13 +82,12 @@ export default function PlayControl() {
         <CardHeader className="flex justify-between items-center border-b">
           <CardTitle>Play Control</CardTitle>
           <div className="w-10 h-auto aspect-square">
-            {canEdit && (
-              <Button
-                className="col-span-1 aspect-square mx-1"
-                onClick={() => setIsDialogOpen(true)}>
-                <Edit />
-              </Button>
-            )}
+            <Button
+              className="col-span-1 aspect-square mx-1"
+              onClick={() => setIsDialogOpen(true)}
+              disabled={!canEdit}>
+              <Edit />
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="grid grid-cols-7">
@@ -229,19 +228,19 @@ export default function PlayControl() {
               <div className="" />
 
               <Button
-                className={`col-span-3 text-center ${canEdit ? "bg-yellow-400 hover:bg-yellow-600" : "bg-blue-400 hover:bg-blue-600" }`}
+                className={`col-span-3 text-center ${
+                  canEdit
+                    ? "bg-yellow-400 hover:bg-yellow-600"
+                    : "bg-blue-400 hover:bg-blue-600"
+                }`}
                 onClick={() => setCanEdit(!canEdit)}>
-                {canEdit ? "LOCK" : "UNLOCK"}
+                {canEdit ? "LOCK" : "UNLOCK"} {canEdit ? <Unlock /> : <Lock />}
               </Button>
             </div>
 
             <div className="grid grid-cols-12 w-full items-center">
               <div className="col-span-9"></div>
-              <div className="col-span-3">
-                {canEdit && (
-                  <Button className=" w-full text-center">End Ball</Button>
-                )}
-              </div>
+              <div className="col-span-3"></div>
             </div>
           </div>
         </CardContent>

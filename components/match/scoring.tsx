@@ -10,6 +10,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useMatch } from "@/context/match-context";
 import WicketDialog from "../modals/wicket-dialog";
+import { Eraser, Send } from "lucide-react";
 
 type SectionType =
   | "wicket"
@@ -461,14 +462,13 @@ export default function Scoring() {
                 variant="default"
                 className="bg-green-600 hover:bg-green-700 text-white"
                 onClick={() => setIsConfirmDialogOpen(true)}>
-                End Ball
+                End Ball <Send/>
               </Button>
               <Button
                 disabled={!canEdit}
-                variant="outline"
                 className="bg-red-50 hover:bg-red-100 border-red-300 text-red-700"
                 onClick={handleClearAll}>
-                Clear All
+                Clear All <Eraser/>
               </Button>
             </div>
           </div>
